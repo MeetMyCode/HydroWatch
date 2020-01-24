@@ -1,0 +1,170 @@
+@import "../../../node_modules/rfs/scss";
+
+html{
+  padding: 0;
+  margin: 0;
+}
+
+body{
+  background-image: url('../../assets/Images/bgMain.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#ChartContainer{
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  height: 90%;
+}
+
+/* #FilterBar{
+  display: block;
+  float: bottom;
+  width: 100%;
+  height: auto;
+  background-color: purple;
+} */
+
+#DetailView{
+  display: none;
+  height: 98%;
+  width: 98%;
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 1%;
+  top: 1%;
+  overflow: hidden; /* Disable scrolling */
+  //transition: 0.5s;
+  //background-color: lightgray;
+  margin: 0; 
+  padding:0;
+}
+
+#CloseButtonContainer{
+  //background-color: white;
+  width: 100%;
+  height: auto;
+  padding: 0;
+}
+
+#CloseButton{
+  float: right;
+  height: auto;
+  width: auto;
+}
+
+#GraphTitleBar{
+  display: inline-block;
+  width: 100%;
+  height: auto;
+  background-color: green;
+  line-height: 30px;
+  text-align: center;
+  @include font-size(30);
+  margin: 0;
+  padding: 0;
+}
+
+.row{
+  /*background-color: White;*/
+  height: auto; 
+}
+
+
+#TitleBar{
+  background-image: url('../../assets/Images/bgTitleBar1cropped.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+
+  border-style: outset !important;
+}
+
+
+#TitleBox{
+  background-color: white;
+  opacity: 0.7;
+  text-align: center;
+  @include font-size(4em);
+  line-height: 100px;
+  border-style: solid;
+  border-color: black;
+  border-radius: 1px;
+}
+ 
+#Title{
+  height: 100px;
+}
+
+#SubTitleBox{
+  background-color: white;
+  border-style: solid;
+  border-color: black;
+  border-radius: 1px;
+  opacity: 0.7;
+  width: 200px;
+  text-align: center;
+  margin: auto;
+  height: 30px;
+}
+ 
+#SubTitle{
+  @include font-size(1.5em);
+  margin: auto;
+  //height: 30px;
+  line-height: 25px;
+}
+ 
+.blank{
+  background-color: lightgray;
+
+}
+ 
+.ParameterContainer{
+  background-color: lightgray;
+}
+ 
+.ParameterTitle{
+  height: 30px;
+  line-height: 30px;
+  @include font-size(1.5em);
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  border-top-style: outset;
+  border-left-style: outset;
+  border-right-style: outset;
+}
+
+.ParameterIcon{
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+}
+ 
+.ParameterValue:hover{
+  background-color: lightgray !important;
+}
+ 
+.ParameterValue{
+  height: 170px;
+  line-height:170px;
+  text-align: center;
+  @include font-size(5em);
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  border-bottom-style: outset;
+  border-left-style: outset;
+  border-right-style: outset;
+}
+ 
+.ParameterValue:hover{
+  background: red;
+}
+ 

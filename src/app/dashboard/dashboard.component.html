@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>HydroWatch Monitoring Interface</title>
+	</head>
+ 
+	<body id="home">
+	 	<div class="container">
+            
+            <!--HEADING SECTION-->
+		    <div class="col-12 p-0 my-2 bg-success rounded" id="TitleBar">
+		        <div class="col-12 pt-2">
+		        	<div id="TitleBox" class="rounded">
+		        		<label id="Title">HydroWatch</label>
+		        	</div>
+		        </div>
+		        <div class="col-12 pb-2 pt-2">
+		        	<div id="SubTitleBox" class="rounded">
+		        		<label id="SubTitle">--Dashboard--</label>
+		        	</div>
+		        </div>
+		    </div>
+         
+            <!--FIRST ROW, 2 PARAMETERS-->
+		    <div class="row mb-2 mt-0 px-2">
+		     
+		      	<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+		        	<div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature</div>
+		       		<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" onmouseup="mouseup(this.id)" onmousedown="mousedown(this.id)" (click)="ShowTempDetailView()">25.3</div>
+		    	</div>
+
+				<div class="col-sm-5 ParameterContainer bg-transparent">
+					<div class="pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">pH</div>
+					<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" onmouseup="mouseup(this.id)" onmousedown="mousedown(this.id)">6.53</div>     
+				</div>
+		     		      
+		    </div>
+         
+            <!--SECOND ROW, 2 PARAMETERS-->
+		    <div class="row mt-0 mb-0 px-2">
+		     		     
+		      <div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+		        <div class="pl-3 ParameterTitle rounded-top bg-success" id="EcTdsTitle">EC/TDS</div>
+		        <div class="ParameterValue rounded-bottom bg-primary" id="EcTdsValue" onmouseup="mouseup(this.id)" onmousedown="mousedown(this.id)">4563</div>     
+		      </div>		     
+		     
+		      <div class="col-sm-5 ParameterContainer bg-transparent">
+				<div class="pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">ORP</div>
+		      	<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue"  onmouseup="mouseup(this.id)" onmousedown="mousedown(this.id)">453</div>   
+		      </div>
+		     		      
+		    </div> 
+		</div>
+
+
+
+		<div class="bg-primary" id="DetailView">
+			<div class="bg-primary mt-2" id="CloseButtonContainer">
+				<label class="bg-primary" id="GraphTitleBar">Graphs and Stats					
+					<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
+				</label>
+			</div>
+
+			<div class="m-2" id="ChartContainer">
+				<canvas class="pb-5" id="myChart"></canvas>
+			</div>
+
+			<!--
+			<div class="bg-success m-2" id="FilterBar">
+				<div>
+					<label>From:</label>
+				</div>
+			</div>
+			-->
+
+		</div>
+
+	</body>
+</html>
+ 
