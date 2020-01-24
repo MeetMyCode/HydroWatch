@@ -1,27 +1,19 @@
 # HydroWatch
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.2.1.
+#What is it?
 
-## Development server
+A web-based dashboard for displaying hydroponic parameters in real time, via arduino sensors connected to a Raspberry Pi based webserver. The parameters in question are pH, Electrical Conductivity (EC), Oxidation-Reduction Potental (ORP) and Temperature.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+#Is it fully working yet?
 
-## Code scaffolding
+No.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+#What technologies have been used?
 
-## Build
+HTML, CSS3/SCSS, Angular 8, Bootstrap 4. Node.js is intended to be used for the web server.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+#ScreenShots
 
-## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
