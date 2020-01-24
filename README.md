@@ -14,6 +14,6 @@ HTML, CSS3/SCSS, Angular 8, Bootstrap 4. Node.js is intended to be used for the 
 
 # ScreenShots
 
-![alt text](https://meetmycode.github.io/Portfolio/assets/Images/HydroWatchCoverImage.png "HydroWatch")
+![alt text](https://github.com/MeetMyCode/HydroWatch/blob/master/src/assets/Images/HydroWatchCoverImage.png "HydroWatch")
 
 
