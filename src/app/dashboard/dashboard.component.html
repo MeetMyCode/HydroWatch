@@ -21,10 +21,10 @@
 		        		<label id="SubTitle">--Dashboard--</label>
 		        	</div>
 		        </div>
-		    </div>
-         
+			</div>
+
             <!--FIRST ROW, 2 PARAMETERS-->
-		    <div class="row mb-2 mt-0 px-2">
+		    <div class="row mb-2 mt-4 px-2">
 		     
 		      	<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
 		        	<div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature</div>
@@ -39,7 +39,7 @@
 		    </div>
          
             <!--SECOND ROW, 2 PARAMETERS-->
-		    <div class="row mt-0 mb-0 px-2">
+		    <div class="row mt-0 mb-0 px-2"> 
 		     		     
 		      <div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
 		        <div class="pl-3 ParameterTitle rounded-top bg-success" id="EcTdsTitle">EC/TDS</div>
@@ -57,23 +57,26 @@
 
 
 		<div class="bg-primary" id="DetailView">
+
 			<div class="bg-primary mt-2" id="CloseButtonContainer">
 				<label class="bg-primary" id="GraphTitleBar">Graphs and Stats					
 					<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
 				</label>
 			</div>
 
-			<div class="m-2" id="ChartContainer">
-				<canvas class="pb-5" id="myChart"></canvas>
-			</div>
-
-			<!--
-			<div class="bg-success m-2" id="FilterBar">
-				<div>
-					<label>From:</label>
+			<div role="group" class="d-flex flex-column align-items-center btn-group chartFilter my-2 mx-0 p-0">
+				<div class="m-0 p-0">
+					<button class="btn chartButton active">pH</button>
+					<button class="btn chartButton">EC</button>
+					<button class="btn chartButton">ORP</button>
+					<button class="btn chartButton">Temp</button>
 				</div>
 			</div>
-			-->
+
+			<div class="m-2" id="ChartContainer">
+				<canvas class="h-100" id="myChart"></canvas>
+			</div>
+
 
 		</div>
 
