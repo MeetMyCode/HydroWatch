@@ -1,6 +1,6 @@
 # HydroWatch
 
-#What is it?
+##What is it?
 
 A web-based dashboard for displaying hydroponic parameters in real time, via arduino sensors connected to a Raspberry Pi based webserver. The parameters in question are pH, Electrical Conductivity (EC), Oxidation-Reduction Potental (ORP) and Temperature.
 
