@@ -23,7 +23,7 @@ body{
 }
 
 .chartFilter{
-  width: 100%;
+  width: auto;
   height: auto;
 }
 
@@ -61,6 +61,10 @@ body{
   -moz-border-radius: 20px;
   border-radius: 20px;
   text-decoration: none;
+}
+
+.chartButton:active{
+  background-color: green;
 }
 
 
