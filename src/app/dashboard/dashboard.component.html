@@ -28,14 +28,12 @@
 
 			<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
 				<div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature</div>
-				<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" onmouseup="mouseup(this.id)"
-					onmousedown="mousedown(this.id)" (click)="ShowTempDetailView()">25.3</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">25.3</div>
 			</div>
 
 			<div class="col-sm-5 ParameterContainer bg-transparent">
 				<div class="pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">pH</div>
-				<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" onmouseup="mouseup(this.id)"
-					onmousedown="mousedown(this.id)">6.53</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">6.53</div>
 			</div>
 
 		</div>
@@ -45,55 +43,50 @@
 
 			<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
 				<div class="pl-3 ParameterTitle rounded-top bg-success" id="EcTdsTitle">EC/TDS</div>
-				<div class="ParameterValue rounded-bottom bg-primary" id="EcTdsValue" onmouseup="mouseup(this.id)"
-					onmousedown="mousedown(this.id)">4563</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="EcTdsValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">4563</div>
 			</div>
 
 			<div class="col-sm-5 ParameterContainer bg-transparent">
 				<div class="pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">ORP</div>
-				<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" onmouseup="mouseup(this.id)"
-					onmousedown="mousedown(this.id)">453</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">453</div>
 			</div>
 
 		</div>
 	</div>
 
+	<!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
+	<div id="mask">
+		<div class="bg-primary" id="DetailView">
+			<div class="bg-primary mt-2" id="CloseButtonContainer">
+				<label class="bg-primary" id="GraphTitleBar">Graphs and Stats
+					<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
+				</label>
+			</div>
 
-
-	<div class="bg-primary" id="DetailView">
-
-		<div class="bg-primary mt-2" id="CloseButtonContainer">
-			<label class="bg-primary" id="GraphTitleBar">Graphs and Stats
-				<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
-			</label>
-		</div>
-
-		<!-- <div class="d-flex flex-column align-self-center"> -->
-			<div class="m-0 p-0 btn-group-toggle bg-dark chartFilter d-flex align-self-center" data-toggle="buttons">
+			<div class="m-0 p-0 btn-group-toggle chartFilter d-flex justify-content-center" data-toggle="buttons">
 				<label class="btn btn-secondary chartButton active">
-					<input type="radio" name="options" id="option1" autocomplete="off"> pH
+					<input type="radio" name="options" id="ph" autocomplete="off"> pH
 				</label>
 
 				<label class="btn btn-secondary chartButton">
-					<input type="radio" name="options" id="option2" autocomplete="off"> EC
+					<input type="radio" name="options" id="ec" autocomplete="off"> EC
 				</label>
 
 				<label class="btn btn-secondary chartButton">
-					<input type="radio" name="options" id="option3" autocomplete="off"> ORP
+					<input type="radio" name="options" id="orp" autocomplete="off"> ORP
 				</label>
 
 				<label class="btn btn-secondary chartButton">
-					<input type="radio" name="options" id="option4" autocomplete="off"> Temp
+					<input type="radio" name="options" id="temp" autocomplete="off"> Temp
 				</label>
 			</div>
-		<!-- </div> -->
 
-		<div class="m-2" id="ChartContainer">
-			<canvas class="h-100" id="myChart"></canvas>
+			<div class="m-2" id="ChartContainer">
+				<canvas class="h-100" id="myChart"></canvas>
+			</div>
 		</div>
-
-
 	</div>
+
 
 </body>
 

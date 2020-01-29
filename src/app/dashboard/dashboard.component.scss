@@ -80,17 +80,34 @@ body{
 
 #DetailView{
   display: none;
-  height: 98%;
-  width: 98%;
+  height: 95%;
+  width: 95%;
   position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 1%;
-  top: 1%;
+  //z-index: 2; /* Sit on top */
+  left: 2.5%;
+  top: 2.5%;
   overflow: hidden; /* Disable scrolling */
   //transition: 0.5s;
   //background-color: lightgray;
   margin: 0; 
   padding:0;
+
+
+  border-bottom-style: outset;
+  border-left-style: outset;
+  border-right-style: outset;
+  border-top-style: outset;
+}
+
+#mask{
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  height: 100vh;
+  width: 100vw;
+  background-color: black;
 }
 
 #CloseButtonContainer{

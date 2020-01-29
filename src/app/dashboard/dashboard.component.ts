@@ -9,6 +9,14 @@ import * as Chart from 'chart.js';
 
 export class DashboardComponent implements OnInit {
 	
+	phChart = 0;
+	orpChart = 2;
+	tempChart = 3;
+	ecChart = 1;
+
+	selectedChart: number = 0;
+
+
 	constructor() {}
 
 	ngOnInit(){}
@@ -66,29 +74,44 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
-	ShowTempDetailView(){
-	//$('#DetailView').toggle("slide",{direction: 'down'});
-	$('#DetailView').slideToggle(); 
-	}
+	ShowChartDetailView(event:Event){
+		switch ((<HTMLDivElement>event.target).id){
 
-	ShowPhDetailView(){
-		$('#DetailView').css("display", "block");
-	}
+			case 'TempValue':
+				$('#temp').click();
+				this.selectedChart = this.tempChart;
+				break;
+			case 'PhValue':
+				$('#ph').click();
+				this.selectedChart = this.phChart;
+				break;
 
-	ShowEcTdsDetailView(){
-		$('#DetailView').css("display", "block");
-	}
+			case 'EcTdsValue':
+				$('#ec').click();
+				this.selectedChart = this.ecChart;
+				break;
 
-	ShowOrpDetailView(){
-		$('#DetailView').css("display", "block");
+			case 'OrpValue':
+				$('#orp').click();
+				this.selectedChart = this.orpChart;
+				break;
+		
+			default:				
+				break;
+		}
+		$('#mask').slideToggle(); 
+		$('#DetailView').slideToggle(); 
+
 	}
 
 	CloseOverlay(){
-	//$('#DetailView').toggle("slide", {direction: 'down'});
-	$('#DetailView').slideToggle();
+		$('#DetailView').slideToggle();
+		$('#mask').slideToggle(); 
 	}
 
-	mousedown(id){
+	mousedown(event: Event){
+
+		var id = (<HTMLDivElement>(event.target)).id;
 
 		switch(id){
 			case "TempValue":
@@ -146,7 +169,9 @@ export class DashboardComponent implements OnInit {
 
 	}
 
-	mouseup(id){
+	mouseup(event: Event){
+
+		var id = (<HTMLDivElement>(event.target)).id;
 
 		switch(id){
 			case "TempValue":
