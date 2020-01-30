@@ -1,15 +1,26 @@
+@import "node_modules/bootstrap/scss/functions";
+@import "node_modules/bootstrap/scss/variables";
+@import "node_modules/bootstrap/scss/mixins/_breakpoints";
+
+
 /* You can add global styles to this file, and also import other style files */
 /* line 1, /Users/rossco/Desktop/Web Development/HydroWatchMockups/css/styles.scss */
 html {
     padding: 0;
     margin: 0;
-  }
+}
   
   /* line 6, /Users/rossco/Desktop/Web Development/HydroWatchMockups/css/styles.scss */
-  body {
-    background-image: url("./assets/Images/bgMain.jpg");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
+body {
+  background-image: url("./assets/Images/bgMain.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
   
+//MEDIA QUERIES
+@include media-breakpoint-down(md) {
+  #DetailView {
+    transform: rotate(-90deg);
+  }
+}
