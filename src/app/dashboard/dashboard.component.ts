@@ -81,28 +81,48 @@ export class DashboardComponent implements OnInit {
 
 	getArduinoReading(){
 
-		this.myWebSocketService.getSocket().subscribe({
-			next: (dataFromServer) => {
+		this.myWebSocketService.getSocket().subscribe(
+			(dataFromServer) => {
 				//console.log('\nTemp: ' + dataFromServer);
 				//console.log('\nprefix char of reading is: '+dataFromServer[0]);
 
-				switch (dataFromServer[0]) {
+				var prefix = dataFromServer[0].toLowerCase();
+
+				switch (prefix) {
 					case "t":
 						var temp = dataFromServer.substring(1, );
 						$('#TempValue').text(temp);
 						break;
-				
+
+					case "p":
+						var temp = dataFromServer.substring(1, );
+						$('#PhValue').text(temp);
+						break;
+
+					case "e":
+
+						var temp = dataFromServer.substring(1, );
+						$('#EcTdsValue').text(temp);
+						break;
+
+					case "o":
+						var temp = dataFromServer.substring(1, );
+						$('#OrpValue').text(temp);
+						break;	
+
 					default:
+						console.log('Error - Unknown');
 						break;
 				}
-
-
-
 			},
-			error: console.log,
-			complete: () => {}		
-		
-		});
+			error => {
+				console.log(error);
+			},
+			() => {
+				console.log('Connection Closed!');
+				alert('Connection Closed!');
+			}		
+		);
 
 	}
 

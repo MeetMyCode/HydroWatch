@@ -6,6 +6,11 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ 
   port: 12345
 });
+
+const port = new SerialPort('/dev/tty.usbmodem14201', {
+  baudRate: 9600,
+});    
+
  
 wss.on('connection', function connection(serverSocket) {
 
@@ -13,7 +18,6 @@ wss.on('connection', function connection(serverSocket) {
   serverSocket.on('message', function incoming(message) {
     process.stdout.write('received: %s', message);
   });
-
 
   process.stdout.write('Connected!');
 
@@ -29,9 +33,12 @@ wss.on('connection', function connection(serverSocket) {
 
 function getTempReadings(socket){
 
-  const port = new SerialPort('/dev/tty.usbmodem14201', {
-    baudRate: 9600,
-  });
+  if (port.isOpen === false) {
+    console.log('Port Closed - creating new connection...');
+    port = new SerialPort('/dev/tty.usbmodem14201', {
+      baudRate: 9600,
+    });    
+  }
 
   var parser = new Readline({
     delimiter: '\r\n',

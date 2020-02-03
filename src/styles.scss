@@ -24,3 +24,22 @@ body {
     transform: rotate(-90deg);
   }
 }
+
+//ADJUST PARAMETER VALUE FONT-SIZES BASED ON SCREEN SIZE
+@include media-breakpoint-down(sm) {
+  #TempValue, #EcTdsValue, #PhValue, #OrpValue {
+    font-size: 25vw;
+  }
+}
+
+@include media-breakpoint-between(sm,md) {
+  #TempValue, #EcTdsValue, #PhValue, #OrpValue {
+    font-size: 9vw;
+  }
+}
+
+@include media-breakpoint-between(md,lg) {
+  #TempValue, #EcTdsValue, #PhValue, #OrpValue {
+    font-size: 10vw;
+  }
+}
