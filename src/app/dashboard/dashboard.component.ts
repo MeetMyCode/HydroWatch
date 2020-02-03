@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import * as Chart from 'chart.js';
+import { WebSocketService } from '../web-socket.service';
+import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,20 +11,20 @@ import * as Chart from 'chart.js';
 })
 
 export class DashboardComponent implements OnInit {
-	
-	phChart = 0;
-	orpChart = 2;
-	tempChart = 3;
-	ecChart = 1;
 
 	selectedChart: number = 0;
+	arduinoReading: string;
 
+	constructor(private myWebSocketService: WebSocketService) {
 
-	constructor() {}
+	}
 
-	ngOnInit(){}
+	ngOnInit(){
+		this.getArduinoReading();
+	}
 
 	ngAfterViewInit() {
+
 		// Our labels along the x-axis
 		var years = [1500,1600,1700,1750,1800,1850,1900,1950,1999,2050];
 		// For drawing the lines
@@ -74,29 +77,57 @@ export class DashboardComponent implements OnInit {
 		})
 	}
 
-	ShowChartDetailView(event:Event){
-		switch ((<HTMLDivElement>event.target).id){
+	
 
+	getArduinoReading(){
+
+		this.myWebSocketService.getSocket().subscribe({
+			next: (dataFromServer) => {
+				//console.log('\nTemp: ' + dataFromServer);
+				//console.log('\nprefix char of reading is: '+dataFromServer[0]);
+
+				switch (dataFromServer[0]) {
+					case "t":
+						var temp = dataFromServer.substring(1, );
+						$('#TempValue').text(temp);
+						break;
+				
+					default:
+						break;
+				}
+
+
+
+			},
+			error: console.log,
+			complete: () => {}		
+		
+		});
+
+	}
+
+	ShowChartDetailView(event:Event){
+		var requestedChart = (<HTMLDivElement>event.target).id;
+
+		switch ((<HTMLDivElement>event.target).id){
+			
 			case 'TempValue':
 				$('#temp').click();
-				this.selectedChart = this.tempChart;
 				break;
 			case 'PhValue':
 				$('#ph').click();
-				this.selectedChart = this.phChart;
 				break;
 
 			case 'EcTdsValue':
 				$('#ec').click();
-				this.selectedChart = this.ecChart;
 				break;
 
 			case 'OrpValue':
 				$('#orp').click();
-				this.selectedChart = this.orpChart;
 				break;
 		
-			default:				
+			default:	
+				console.log('Unknown Chart Requested - ' + requestedChart);			
 				break;
 		}
 		$('#mask').slideToggle(); 
