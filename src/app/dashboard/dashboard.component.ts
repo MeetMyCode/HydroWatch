@@ -87,6 +87,7 @@ export class DashboardComponent implements OnInit {
 				//console.log('\nprefix char of reading is: '+dataFromServer[0]);
 
 				var prefix = dataFromServer[0].toLowerCase();
+				console.log("reading prefix is: " + prefix);
 
 				switch (prefix) {
 					case "t":

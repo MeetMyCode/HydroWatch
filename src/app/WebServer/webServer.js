@@ -45,7 +45,7 @@ function getTempReadings(socket){
   })
   port.pipe(parser);
   parser.on('data', function (data) {
-    process.stdout.write('\n'+data);
+    process.stdout.write("\n" + data);
     socket.send(data);
     //return data.toString();
   });
