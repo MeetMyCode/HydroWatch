@@ -5,15 +5,20 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { WebSocketService } from './web-socket.service';
+import { TestComponent } from './test-component/test-component.component';
+import { TempComponent } from './temp/temp.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
-    DashboardComponent
+    DashboardComponent,
+    TestComponent,
+    TempComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
   providers: [WebSocketService],
   bootstrap: [AppComponent]

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>HydroWatch Monitoring Interface</title>
+</head>
+
+<body id="home">
+	<div class="container">
+
+		<!--HEADING SECTION-->
+		<div class="col-12 p-0 my-2 bg-success rounded" id="TitleBar">
+			<div class="col-12 pt-2">
+				<div id="TitleBox" class="rounded">
+					<label id="Title">HydroWatch</label>
+				</div>
+			</div>
+			<div class="col-12 pb-2 pt-2">
+				<div id="SubTitleBox" class="rounded">
+					<label id="SubTitle">--Dashboard--</label>
+				</div>
+			</div>
+		</div>
+
+		<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
+		<div class="row mb-2 mt-4 px-2">
+
+			<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+				<div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">25.38	</div>
+			</div>
+
+			<div class="col-sm-5 ParameterContainer bg-transparent">
+				<div class="pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">pH</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">6.53</div>
+			</div>
+
+		</div>
+
+		<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
+		<div class="row mt-0 mb-0 px-2">
+
+			<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+				<div class="pl-3 ParameterTitle rounded-top bg-success" id="EcTdsTitle">EC/TDS</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="EcTdsValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">4563</div>
+			</div>
+
+			<div class="col-sm-5 ParameterContainer bg-transparent">
+				<div class="pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">ORP</div>
+				<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">453</div>
+			</div>
+
+		</div>
+	</div>
+
+	<!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
+	<div id="mask">
+		<div id="DetailView">
+			<div class="mt-2" id="CloseButtonContainer">
+				<label id="GraphTitleBar">Graphs and Stats
+					<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
+				</label>
+			</div>
+
+			<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
+				<label class="btn btn-secondary chartButton active">
+					<input type="radio" name="options" id="ph" autocomplete="off"> pH
+				</label>
+
+				<label class="btn btn-secondary chartButton">
+					<input type="radio" name="options" id="ec" autocomplete="off"> EC
+				</label>
+
+				<label class="btn btn-secondary chartButton">
+					<input type="radio" name="options" id="orp" autocomplete="off"> ORP
+				</label>
+
+				<label class="btn btn-secondary chartButton">
+					<input type="radio" name="options" id="temp" autocomplete="off"> Temp
+				</label>
+			</div>
+
+			<div class="m-2" id="ChartContainer">
+				<canvas class="h-100" id="myChart"></canvas>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+
+</html>

@@ -6,12 +6,12 @@ import { Observable } from 'rxjs';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 
 @Component({
-	selector: 'app-dashboard',
-	templateUrl: './dashboard.component.html',
-	styleUrls: ['./dashboard.component.scss']
-  })
+  selector: 'app-test',
+  templateUrl: './test-component.component.html',
+  styleUrls: ['./test-component.component.scss']
+})
 
-export class DashboardComponent implements OnInit {
+export class TestComponent implements OnInit {
 	selectedChart: number = 0;
 	arduinoReading: string;
 	TempGauge: Gauge;
@@ -349,26 +349,20 @@ export class DashboardComponent implements OnInit {
 	ShowChartDetailView(event:Event){
 		var requestedChart = (<HTMLDivElement>event.target).id;
 
-		console.log("Requested Chart: " + (<HTMLDivElement>event.target).id);
-
 		switch ((<HTMLDivElement>event.target).id){
 			
 			case 'TempValue':
-			case 'TempGauge':
 				$('#temp').click();
 				break;
 			case 'PhValue':
-			case 'PhGauge':
 				$('#ph').click();
 				break;
 
-			case 'EcValue':
-			case 'EcGauge':
+			case 'EcTdsValue':
 				$('#ec').click();
 				break;
 
 			case 'OrpValue':
-			case 'OrpGauge':
 				$('#orp').click();
 				break;
 		

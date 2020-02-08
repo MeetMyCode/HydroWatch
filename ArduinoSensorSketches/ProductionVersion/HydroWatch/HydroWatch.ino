@@ -80,7 +80,7 @@ void GetPhReading(){
       pHValue = 3.5*voltage+Offset;
       samplingTime=millis();
   }
-  if(millis() - printTime > printInterval)   //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
+  if(millis() - printTime > printInterval)   //Every 800 milliseconds, print a numerical
   {
     String phPrefix = "p";
     Serial.print(phPrefix + String(pHValue) + "\r\n");
