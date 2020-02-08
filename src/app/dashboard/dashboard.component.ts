@@ -264,29 +264,29 @@ export class DashboardComponent implements OnInit {
 
 	initPhGauge(){
 		var PhCanvas = document.getElementById('PhGauge'); // your canvas element
-		var PhGauge = new Gauge(PhCanvas).setOptions(this.PhOptions); // create sexy gauge!
-		PhGauge.maxValue = 14; // set max gauge value
-		PhGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
-		PhGauge.animationSpeed = 1; // set animation speed (32 is default value)
-		PhGauge.set(6.5); // set actual value
+		this.PhGauge = new Gauge(PhCanvas).setOptions(this.PhOptions); // create sexy gauge!
+		this.PhGauge.maxValue = 14; // set max gauge value
+		this.PhGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+		this.PhGauge.animationSpeed = 1; // set animation speed (32 is default value)
+		this.PhGauge.set(6.5); // set actual value
 	}
 
 	initEcGauge(){
 		var EcCanvas = document.getElementById('EcGauge'); // your canvas element
-		var EcGauge = new Gauge(EcCanvas).setOptions(this.EcOptions); // create sexy gauge!
-		EcGauge.maxValue = 4; // set max gauge value
-		EcGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
-		EcGauge.animationSpeed = 1; // set animation speed (32 is default value)
-		EcGauge.set(1.6); // set actual value
+		this.EcGauge = new Gauge(EcCanvas).setOptions(this.EcOptions); // create sexy gauge!
+		this.EcGauge.maxValue = 4; // set max gauge value
+		this.EcGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+		this.EcGauge.animationSpeed = 1; // set animation speed (32 is default value)
+		this.EcGauge.set(1.6); // set actual value
 	}
 
 	initOrpGauge(){
 		var OrpCanvas = document.getElementById('OrpGauge'); // your canvas element
-		var OrpGauge = new Gauge(OrpCanvas).setOptions(this.OrpOptions); // create sexy gauge!
-		OrpGauge.maxValue = 600; // set max gauge value
-		OrpGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
-		OrpGauge.animationSpeed = 1; // set animation speed (32 is default value)
-		OrpGauge.set(300); // set actual value
+		this.OrpGauge = new Gauge(OrpCanvas).setOptions(this.OrpOptions); // create sexy gauge!
+		this.OrpGauge.maxValue = 600; // set max gauge value
+		this.OrpGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+		this.OrpGauge.animationSpeed = 1; // set animation speed (32 is default value)
+		this.OrpGauge.set(300); // set actual value
 	}	
 
 	getArduinoReading(){
@@ -349,7 +349,7 @@ export class DashboardComponent implements OnInit {
 	ShowChartDetailView(event:Event){
 		var requestedChart = (<HTMLDivElement>event.target).id;
 
-		console.log("Requested Chart: " + (<HTMLDivElement>event.target).id);
+		console.log("Requested Chart: " + requestedChart);
 
 		switch ((<HTMLDivElement>event.target).id){
 			

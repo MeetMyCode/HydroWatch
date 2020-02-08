@@ -26,7 +26,7 @@
 		<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
 		<div class="row mt-4 px-2">
             <div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
-                <div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature ({{this.currentTemp}})</div>
+                <div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature ({{currentTemp}})</div>
 				<div class="ParameterValue rounded-bottom bg-primary p-0 m-0" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
                     <canvas class="p-0 m-0" id="TempGauge"></canvas>
                 </div>
