@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as Chart from 'chart.js';
 import { WebSocketService } from '../web-socket.service';
-import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
-import { Observable } from 'rxjs';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 
 @Component({
