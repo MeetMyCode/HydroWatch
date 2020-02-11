@@ -1,99 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-	<meta charset="utf-8">
-	<title>HydroWatch Monitoring Interface</title>
-</head>
+	<head>
+		<meta charset="utf-8">
+		<title>HydroWatch Monitoring Interface</title>
+	</head>
 
-<body id="home">
-	<div class="container">
+	<body id="home">
+		<div class="container">
 
-		<!--HEADING SECTION-->
-		<div class="col-12 p-0 my-2 bg-success rounded" id="TitleBar">
-			<div class="col-12 pt-2">
-				<div id="TitleBox" class="rounded">
-					<label id="Title">HydroWatch</label>
+			<!--HEADING SECTION-->
+			<div class="col-12 p-0 my-2 bg-success rounded" id="TitleBar">
+				<div class="col-12 pt-2">
+					<div id="TitleBox" class="rounded">
+						<label id="Title">HydroWatch</label>
+					</div>
+				</div>
+				<div class="col-12 pb-2 pt-2">
+					<div id="SubTitleBox" class="rounded">
+						<label id="SubTitle">--Dashboard--</label>
+					</div>
 				</div>
 			</div>
-			<div class="col-12 pb-2 pt-2">
-				<div id="SubTitleBox" class="rounded">
-					<label id="SubTitle">--Dashboard--</label>
+
+			<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
+			<div class="row mt-4 px-2">
+				<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">
+						<p class="readingText">Temperature</p>
+						<p class="readingText mr-2 mb-0 p-0">{{this.currentTemp}}°C</p>
+					</div>
+					<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<canvas id="TempGauge"></canvas>
+					</div>
+				</div>
+
+				<div class="col-sm-5 mb-2 justify-content-between ParameterContainer bg-transparent">
+					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">
+						<p class="readingText">PH</p>
+						<p class="readingText mr-2 p-0">{{this.currentPh}}</p>
+					</div>
+					<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<canvas id="PhGauge"></canvas>
+					</div>
+				</div>
+			</div>
+
+			<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
+			<div class="row mb-4 px-2">
+				<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">EC
+						<p class="readingText">EC</p>
+						<p class="readingText mr-2 p-0 float-right">{{this.currentEc}}</p>
+					</div>
+					<div class="ParameterValue rounded-bottom bg-primary" id="EcValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<canvas id="EcGauge"></canvas>
+					</div>
+				</div>
+
+				<div class="col-sm-5 mb-2 ParameterContainer bg-transparent">
+					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">ORP
+						<p class="readingText">ORP</p>
+						<p class="readingText mr-2 p-0 float-right">{{this.currentOrp}}</p>
+					</div>
+					<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<canvas id="OrpGauge"></canvas>
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
-		<div class="row mt-4 px-2">
-            <div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
-                <div class="pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">Temperature ({{currentTemp}})</div>
-				<div class="ParameterValue rounded-bottom bg-primary p-0 m-0" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-                    <canvas class="p-0 m-0" id="TempGauge"></canvas>
-                </div>
-            </div>
+		<!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
+		<div id="mask">
+			<div id="DetailView">
+				<div class="mt-2" id="CloseButtonContainer">
+					<label id="GraphTitleBar">Graphs and Stats
+						<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
+					</label>
+				</div>
 
-            <div class="col-sm-5 mb-2 ParameterContainer bg-transparent">
-                <div class="pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">PH ({{this.currentPh}})</div>
-				<div class="ParameterValue rounded-bottom bg-primary p-0 m-0" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-                    <canvas class="p-0 m-0" id="PhGauge"></canvas>
-                </div>
-            </div>
+				<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
+					<label class="btn btn-secondary chartButton active">
+						<input type="radio" name="options" id="ph" autocomplete="off"> pH
+					</label>
 
-        </div>
+					<label class="btn btn-secondary chartButton">
+						<input type="radio" name="options" id="ec" autocomplete="off"> EC
+					</label>
 
-		<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
-		<div class="row mb-2 px-2">
-            <div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
-                <div class="pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">EC ({{this.currentEc}})</div>
-				<div class="ParameterValue rounded-bottom bg-primary" id="EcValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-                    <canvas class="p-0 m-0" id="EcGauge"></canvas>
-                </div>
-            </div>
+					<label class="btn btn-secondary chartButton">
+						<input type="radio" name="options" id="orp" autocomplete="off"> ORP
+					</label>
 
-            <div class="col-sm-5 mb-2 ParameterContainer bg-transparent">
-                <div class="pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">ORP ({{this.currentOrp}})</div>
-				<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-                    <canvas class="p-0 m-0" id="OrpGauge"></canvas>
-                </div>
-            </div>
+					<label class="btn btn-secondary chartButton">
+						<input type="radio" name="options" id="temp" autocomplete="off"> Temp
+					</label>
+				</div>
 
-        </div>
-	</div>
-
-	<!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
-	<div id="mask">
-		<div id="DetailView">
-			<div class="mt-2" id="CloseButtonContainer">
-				<label id="GraphTitleBar">Graphs and Stats
-					<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
-				</label>
-			</div>
-
-			<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
-				<label class="btn btn-secondary chartButton active">
-					<input type="radio" name="options" id="ph" autocomplete="off"> pH
-				</label>
-
-				<label class="btn btn-secondary chartButton">
-					<input type="radio" name="options" id="ec" autocomplete="off"> EC
-				</label>
-
-				<label class="btn btn-secondary chartButton">
-					<input type="radio" name="options" id="orp" autocomplete="off"> ORP
-				</label>
-
-				<label class="btn btn-secondary chartButton">
-					<input type="radio" name="options" id="temp" autocomplete="off"> Temp
-				</label>
-			</div>
-
-			<div class="m-2" id="ChartContainer">
-				<canvas class="h-100" id="myChart"></canvas>
+				<div class="m-2" id="ChartContainer">
+					<canvas class="h-100" id="myChart"></canvas>
+				</div>
 			</div>
 		</div>
-	</div>
 
 
-</body>
-
+	</body>
 </html>

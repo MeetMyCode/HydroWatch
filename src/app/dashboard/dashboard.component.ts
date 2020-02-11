@@ -16,10 +16,10 @@ export class DashboardComponent implements OnInit {
 	PhGauge: Gauge;
 	EcGauge: Gauge;
 	OrpGauge: Gauge;
-	currentTemp: string;
-	currentPh: string;
-	currentEc: string;
-	currentOrp: string;
+	currentTemp: string = "22";
+	currentPh: string = "6.54"
+	currentEc: string = "1.6";
+	currentOrp: string = "300";
 
   
 	TempOptions = {
@@ -81,7 +81,7 @@ export class DashboardComponent implements OnInit {
 		highDpiSupport: true,     // High resolution support
 		// renderTicks is Optional
 		renderTicks: {
-		divisions: 8,
+		divisions: 14,
 		divWidth: 1,
 		divLength: 1,
 		divColor: '#333333',
