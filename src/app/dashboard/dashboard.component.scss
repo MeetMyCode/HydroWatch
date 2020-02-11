@@ -135,7 +135,7 @@ body{
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
-
+  height: 105px;
   border-style: outset !important;
 }
 
@@ -144,15 +144,17 @@ body{
   background-color: white;
   opacity: 0.7;
   text-align: center;
-  font-size: 3em;
-  line-height: 100px;
+  font-size: 2.5em;
+  line-height: 40px;
   border-style: solid;
   border-color: black;
   border-radius: 1px;
+  max-height: 10%;
+  min-height: 5%;
 }
  
 #Title{
-  height: 100px;
+  height: 40px;
 }
 
 #SubTitleBox{
@@ -179,7 +181,7 @@ body{
  
 .ParameterContainer{
   background-color: lightgray;
-  margin-top: 20px;
+  margin-top: 10px;
 }
  
 .ParameterTitle{
@@ -205,7 +207,7 @@ body{
 }
  
 .ParameterValue{
-  height: 170px;
+  height: auto;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
