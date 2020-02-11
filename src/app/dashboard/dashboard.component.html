@@ -24,46 +24,46 @@
 			</div>
 
 			<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
-			<div class="row mt-4 px-2">
-				<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
+			<div class="row px-2">
+				<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
 					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">
 						<p class="readingText">Temperature</p>
-						<p class="readingText mr-2 mb-0 p-0">{{this.currentTemp}}°C</p>
 					</div>
 					<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<p class="bubbleText">{{this.currentTemp}}°C</p>
 						<canvas id="TempGauge"></canvas>
 					</div>
 				</div>
 
-				<div class="col-sm-5 mb-2 justify-content-between ParameterContainer bg-transparent">
+				<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
 					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">
 						<p class="readingText">PH</p>
-						<p class="readingText mr-2 p-0">{{this.currentPh}}</p>
 					</div>
 					<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<p class="bubbleText">{{this.currentPh}}</p>
 						<canvas id="PhGauge"></canvas>
 					</div>
 				</div>
 			</div>
 
 			<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
-			<div class="row mb-4 px-2">
-				<div class="col-sm-5 offset-sm-1 mb-2 ParameterContainer bg-transparent">
-					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">EC
+			<div class="row px-2">
+				<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
+					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">
 						<p class="readingText">EC</p>
-						<p class="readingText mr-2 p-0 float-right">{{this.currentEc}}</p>
 					</div>
 					<div class="ParameterValue rounded-bottom bg-primary" id="EcValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<p class="bubbleText">{{this.currentEc}}mS/cm</p>
 						<canvas id="EcGauge"></canvas>
 					</div>
 				</div>
 
-				<div class="col-sm-5 mb-2 ParameterContainer bg-transparent">
-					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">ORP
+				<div class="col-sm-5 ParameterContainer bg-transparent">
+					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">
 						<p class="readingText">ORP</p>
-						<p class="readingText mr-2 p-0 float-right">{{this.currentOrp}}</p>
 					</div>
 					<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+						<p class="bubbleText">{{this.currentOrp}}mV</p>
 						<canvas id="OrpGauge"></canvas>
 					</div>
 				</div>

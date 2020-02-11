@@ -16,7 +16,7 @@ export class DashboardComponent implements OnInit {
 	PhGauge: Gauge;
 	EcGauge: Gauge;
 	OrpGauge: Gauge;
-	currentTemp: string = "22";
+	currentTemp: string = "22.65";
 	currentPh: string = "6.54"
 	currentEc: string = "1.6";
 	currentOrp: string = "300";

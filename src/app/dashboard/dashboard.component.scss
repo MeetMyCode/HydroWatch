@@ -144,7 +144,7 @@ body{
   background-color: white;
   opacity: 0.7;
   text-align: center;
-  font-size: 4em;
+  font-size: 3em;
   line-height: 100px;
   border-style: solid;
   border-color: black;
@@ -179,6 +179,7 @@ body{
  
 .ParameterContainer{
   background-color: lightgray;
+  margin-top: 20px;
 }
  
 .ParameterTitle{
@@ -205,9 +206,6 @@ body{
  
 .ParameterValue{
   height: 170px;
-  line-height:170px;
-  text-align: center;
-  font-size: 9vw;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
@@ -228,3 +226,11 @@ canvas{
   width: 100%;
   height: 100%;
 }
+
+.bubbleText{
+  position: absolute;
+  top: 30px;
+  right: 25px;
+  font-size: 2.5vw;
+}
+
