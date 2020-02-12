@@ -3,12 +3,6 @@
 //SASS VARIABLES
 $chartSelectorButton: #0275d8;
 
-
-html{
-  padding: 0;
-  margin: 0;
-}
-
 body{
   background-image: url('../../assets/Images/bgMain.jpg');
   background-position: center;
@@ -71,7 +65,8 @@ body{
 #DetailView{
   display: none;
   background-image: url("../../assets/Images/bgMain.jpg");
-  background-position: center;
+  //background-position: center;
+  background-size: cover;
   background-repeat: no-repeat;
   height: 95%;
   width: 95%;
@@ -233,6 +228,5 @@ canvas{
   position: absolute;
   top: 30px;
   right: 25px;
-  font-size: 2.5vw;
+  font-size: 2em;
 }
-
