@@ -6,6 +6,8 @@ const dbTables = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
 const Readline = SerialPort.parsers.Readline;
 
+const arduinoPortAddress = '/dev/ttyACM0';
+
 var dbConnectionPool = mysql.createPool({
   connectionLimit: '2',
   host     : 'localhost',
