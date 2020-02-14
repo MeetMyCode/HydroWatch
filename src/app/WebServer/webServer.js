@@ -3,6 +3,8 @@ const mysql = require('mysql');
 const WebSocket = require('ws');
 const http = require('http');
 const path = require('path');
+const mysql = require('mysql');
+
 const webServerPort = 8080;
 const dashboardPageAddress = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch/index.html';
 const distDir = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch';
@@ -140,8 +142,40 @@ var port = new SerialPort('/dev/tty.usbmodem14201', {
 wss.on('connection', function connection(serverSocket) {
 
   // IF THE SERVER GETS A MESSAGE FROM THE CLIENT..
-  serverSocket.on('message', function incoming(message) {
+  serverSocket.on('message', function incoming(queryString) {
+
+    //a query string is received as the incoming message. Execute it against the database.
+
+    var result = '';
+    var finalResult = '';
+
     process.stdout.write('\nreceived: %s', message);
+    dbConnectionPool.getConnection((err, poolConnection) => {
+
+      if (err) {
+        process.stdout.write('\nError getting pool connection: ' + err);
+      }else{
+        process.stdout.write('\nDatabase Connection from Pool established!');
+        
+        dbConnectionPool.query(
+          queryString,
+          function (error, results, fields) {
+      
+          try {  
+            if (error) throw error;    
+          } catch (error) {
+            process.stdout.write('\nError thrown when trying to connect to db: ' + error);
+          }
+          var prefix = 'tt';
+          result = JSON.stringify(results);
+          finalResult = prefix + result;
+
+        });
+      }
+    });
+
+    process.stdout.write('\nResult of Database Query is: ' + result);
+    serverSocket.send(finalResult);
   });
 
   process.stdout.write('\nConnected to Socket!');

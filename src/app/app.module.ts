@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { WebSocketService } from './web-socket.service';
+import { DatabaseControllerService } from './database-controller.service';
 import { TestComponent } from './test-component/test-component.component';
 import { TempComponent } from './temp/temp.component';
 
@@ -20,7 +21,7 @@ import { TempComponent } from './temp/temp.component';
     BrowserModule,
     AppRoutingModule,
   ],
-  providers: [WebSocketService],
+  providers: [WebSocketService,DatabaseControllerService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
