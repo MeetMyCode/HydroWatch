@@ -2,8 +2,11 @@ const SerialPort = require('serialport')
 const mysql = require('mysql');
 const WebSocket = require('ws');
 const http = require('http');
+const path = require('path');
 const webServerPort = 8080;
-const dashboardPageAddress = '../../../dist/HydroWatch/index.html';
+//const dashboardPageAddress = 'Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/index.html';
+const dashboardPageAddress = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch/index.html';
+const baseDir = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch';
 
 const dbTables = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
@@ -25,24 +28,87 @@ var dbConnectionPool = mysql.createPool({
 
 http.createServer(function (req, res) {
 
-  switch (req.url) {
-    case '/':
-      res.writeHead(200, {'Content-Type': 'text/html'});
+  //process.stdout.write('__dirname is: ' + __dirname + 'END OF URL');
+  process.stdout.write('req.url is: ' + req.url + 'END OF URL');
 
+  var mimeType = path.extname(req.url);
+  process.stdout.write('mimeType is: ' + mimeType + 'END OF URL');
+
+  if (req.url === '/') {
+    mimeType = '/';
+  }
+
+  switch (mimeType) {
+    case '/':
       //return the dashboard page
       fs.readFile(dashboardPageAddress, function(err,data){
 
         if (!err) {
-          res.write(data);
+          res.writeHead(200, {'Content-Type': 'text/html'});
+          res.write(data, 'utf-8');
           res.end();
         }else{
-          process.stdout.write('Error loading Index.html: ' + err);
+          process.stdout.write('Error loading index.html: ' + err);
         }
       });
-      break;
-  
+    break;
+
+    case '.js':
+      fs.readFile(baseDir + req.url, function(err,data){
+
+        if (!err) {
+          res.writeHead(200, {'Content-Type': 'text/javascript'});
+          res.write(data, 'utf-8');
+          res.end();
+        }else{
+          process.stdout.write('Error loading .js: ' + err);
+        }
+      });
+    
+    break;
+
+    case '.css':
+      fs.readFile(baseDir + req.url, function(err,data){
+
+        if (!err) {
+          res.writeHead(200, {'Content-Type': 'text/css'});
+          res.write(data, 'utf-8');
+          res.end();
+        }else{
+          process.stdout.write('Error loading .css: ' + err);
+        }
+      });
+    break;
+
+    case '.ico':
+      fs.readFile(baseDir + req.url, function(err,data){
+
+        if (!err) {
+          res.writeHead(200, {'Content-Type': 'image/x-icon'});
+          res.write(data, 'utf-8');
+          res.end();
+        }else{
+          process.stdout.write('Error loading .ico: ' + err);
+        }
+      });
+    break;
+
+    case '.jpg':
+      fs.readFile(baseDir + req.url, function(err,data){
+
+        if (!err) {
+          res.writeHead(200, {'Content-Type': 'image/jpeg'});
+          res.write(data, 'utf-8');
+          res.end();
+        }else{
+          process.stdout.write('Error loading .jpg: ' + err);
+        }
+      });
+    break;
+
+
     default:
-      process.stdout.write('Received an unrecognised request URL in http.createServer(): /n' + req.url + '/n');
+      process.stdout.write('Received an unrecognised request URL in http.createServer(): ' + req.url + 'END OF URL');
       break;
   }
 
