@@ -28,15 +28,17 @@ var dbConnectionPool = mysql.createPool({
 
 http.createServer(function (req, res) {
 
-  //process.stdout.write('__dirname is: ' + __dirname + 'END OF URL');
-  process.stdout.write('req.url is: ' + req.url + 'END OF URL');
+  //process.stdout.write('\n__dirname is: ' + __dirname);
+  //process.stdout.write('\nreq.url is: ' + req.url);
 
   var mimeType = path.extname(req.url);
-  process.stdout.write('mimeType is: ' + mimeType + 'END OF URL');
 
   if (req.url === '/') {
     mimeType = '/';
   }
+  process.stdout.write('\nreq.url - mimeType is: ' + req.url + ' - ' + mimeType);
+
+
 
   switch (mimeType) {
     case '/':
@@ -48,7 +50,7 @@ http.createServer(function (req, res) {
           res.write(data, 'utf-8');
           res.end();
         }else{
-          process.stdout.write('Error loading index.html: ' + err);
+          process.stdout.write('\nError loading index.html: ' + err);
         }
       });
     break;
@@ -61,7 +63,7 @@ http.createServer(function (req, res) {
           res.write(data, 'utf-8');
           res.end();
         }else{
-          process.stdout.write('Error loading .js: ' + err);
+          process.stdout.write('\nError loading .js: ' + err);
         }
       });
     
@@ -75,20 +77,33 @@ http.createServer(function (req, res) {
           res.write(data, 'utf-8');
           res.end();
         }else{
-          process.stdout.write('Error loading .css: ' + err);
+          process.stdout.write('\nError loading .css: ' + err);
         }
       });
     break;
 
+    case '.png':
+      fs.readFile(baseDir + req.url, function(err,data){
+
+        if (!err) {
+          res.writeHead(200, {'Content-Type': 'image/png'});
+          res.write(data);
+          res.end();
+        }else{
+          process.stdout.write('\nError loading .png: ' + err);
+        }
+      });
+    break;
+  
     case '.ico':
       fs.readFile(baseDir + req.url, function(err,data){
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'image/x-icon'});
-          res.write(data, 'utf-8');
+          res.write(data);
           res.end();
         }else{
-          process.stdout.write('Error loading .ico: ' + err);
+          process.stdout.write('\nError loading .ico: ' + err);
         }
       });
     break;
@@ -98,10 +113,10 @@ http.createServer(function (req, res) {
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'image/jpeg'});
-          res.write(data, 'utf-8');
+          res.write(data);
           res.end();
         }else{
-          process.stdout.write('Error loading .jpg: ' + err);
+          process.stdout.write('\nError loading .jpg: ' + err);
         }
       });
     break;
@@ -120,7 +135,7 @@ const wss = new WebSocket.Server({
   port: 12345
 });
 
-const port = new SerialPort('/dev/tty.usbmodem14201', {
+var port = new SerialPort('/dev/tty.usbmodem14201', {
   baudRate: 9600,
 });
  
