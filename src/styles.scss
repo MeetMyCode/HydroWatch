@@ -61,3 +61,12 @@ body {
     font-size: 2em !important;
   }
 }
+
+@include media-breakpoint-up(xl) {
+  .bubbleText {
+    font-size: 3vw !important;
+  }
+  .row{
+    height: 40% !important;
+  }
+}

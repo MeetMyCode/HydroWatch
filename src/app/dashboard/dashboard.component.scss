@@ -173,10 +173,16 @@ body{
 .blank{
   background-color: lightgray;
 }
+
+.row{
+  margin-top: 10px !important;
+  //background-color: blue;
+}
  
 .ParameterContainer{
   background-color: lightgray;
-  margin-top: 10px;
+  //margin-top: 10px;
+  height: 100%;
 }
  
 .ParameterTitle{
@@ -185,7 +191,7 @@ body{
   font-size: 1.5em;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
-  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
+  box-shadow: 10px 10px 5px 0px rgbaß(0,0,0,0.75);
   border-top-style: outset;
   border-left-style: outset;
   border-right-style: outset;
@@ -202,7 +208,8 @@ body{
 }
  
 .ParameterValue{
-  height: auto;
+  height: 100%;
+  width: 100%;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);

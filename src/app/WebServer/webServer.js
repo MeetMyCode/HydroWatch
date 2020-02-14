@@ -4,9 +4,8 @@ const WebSocket = require('ws');
 const http = require('http');
 const path = require('path');
 const webServerPort = 8080;
-//const dashboardPageAddress = 'Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/index.html';
 const dashboardPageAddress = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch/index.html';
-const baseDir = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch';
+const distDir = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch';
 
 const dbTables = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
@@ -29,7 +28,6 @@ var dbConnectionPool = mysql.createPool({
 http.createServer(function (req, res) {
 
   //process.stdout.write('\n__dirname is: ' + __dirname);
-  //process.stdout.write('\nreq.url is: ' + req.url);
 
   var mimeType = path.extname(req.url);
 
@@ -37,8 +35,6 @@ http.createServer(function (req, res) {
     mimeType = '/';
   }
   process.stdout.write('\nreq.url - mimeType is: ' + req.url + ' - ' + mimeType);
-
-
 
   switch (mimeType) {
     case '/':
@@ -56,7 +52,7 @@ http.createServer(function (req, res) {
     break;
 
     case '.js':
-      fs.readFile(baseDir + req.url, function(err,data){
+      fs.readFile(distDir + req.url, function(err,data){
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'text/javascript'});
@@ -70,7 +66,7 @@ http.createServer(function (req, res) {
     break;
 
     case '.css':
-      fs.readFile(baseDir + req.url, function(err,data){
+      fs.readFile(distDir + req.url, function(err,data){
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'text/css'});
@@ -83,7 +79,7 @@ http.createServer(function (req, res) {
     break;
 
     case '.png':
-      fs.readFile(baseDir + req.url, function(err,data){
+      fs.readFile(distDir + req.url, function(err,data){
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'image/png'});
@@ -96,7 +92,7 @@ http.createServer(function (req, res) {
     break;
   
     case '.ico':
-      fs.readFile(baseDir + req.url, function(err,data){
+      fs.readFile(distDir + req.url, function(err,data){
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'image/x-icon'});
@@ -109,7 +105,7 @@ http.createServer(function (req, res) {
     break;
 
     case '.jpg':
-      fs.readFile(baseDir + req.url, function(err,data){
+      fs.readFile(distDir + req.url, function(err,data){
 
         if (!err) {
           res.writeHead(200, {'Content-Type': 'image/jpeg'});
@@ -131,6 +127,8 @@ http.createServer(function (req, res) {
 
 //END OF WEBSERVER CODE
 
+
+//CREATE WEBSOCKET AND SERIALPORT CONNECTIONS/LISTENERS
 const wss = new WebSocket.Server({ 
   port: 12345
 });
@@ -148,17 +146,30 @@ wss.on('connection', function connection(serverSocket) {
 
   process.stdout.write('\nConnected to Socket!');
 
+  //GET READINGS FROM ARDUINO & PASS THEM TO DATABASE AND WEB PAGE
   getSensorReadings(serverSocket);
 
 });
 
-function getSensorReadings(socket, poolConnection){
+//END OF WEB SOCKET AND SERIALPORT CONNECTION CREATION CODE
+
+function getSensorReadings(socket){
+
+  /*
+    >>function getSensorReadings(socket)<<
+  This function takes a web socket as an argument. 
+  Data is received from the seriaport connection to the arduino which is then
+  filtered/formatted for before sending to the corresponding database tables
+  and also forwarded on the dashbpoard web page via the web socket.
+  */
 
   if (port.isOpen === false) {
     console.log('\nPort Closed - creating new connection...');
     port = new SerialPort('/dev/tty.usbmodem14201', {
       baudRate: 9600,
-    });    
+    },(err)=>{
+      process.stdout.write('\n' + err);
+    });
   }
 
   var parser = new Readline({
@@ -196,28 +207,24 @@ function filterPrefixFromArduinoReading(dataFromArduino, poolConnection){
     case "t":
       temp = dataFromArduino.substring(1, );
       sentoDbTable(prefix, temp);
-      //sendToDbTempTable(temp);
       dbConnectionPool.releaseConnection(poolConnection)
       break;
 
     case "p":
       var ph = dataFromArduino.substring(1, );
       sentoDbTable(prefix, ph);
-      //sendToDbPhTable(ph);
       dbConnectionPool.releaseConnection(poolConnection);
       break;
 
     case "e":
       var ec = dataFromArduino.substring(1, );
       sentoDbTable(prefix,ec);
-      //sendToDbEcTable(ec);
       dbConnectionPool.releaseConnection(poolConnection);
       break;
 
     case "o":
       var orp = dataFromArduino.substring(1, );
       sentoDbTable(prefix,orp);
-      //sendToDbOrpTable(orp);
       dbConnectionPool.releaseConnection(poolConnection);
       break;	
 
