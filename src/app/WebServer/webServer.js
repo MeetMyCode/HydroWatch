@@ -1,10 +1,15 @@
 const SerialPort = require('serialport')
 const mysql = require('mysql');
 const WebSocket = require('ws');
+const http = require('http');
+const webServerPort = 8080;
+const dashboardPageAddress = '../../../dist/HydroWatch/index.html';
 
 const dbTables = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
 const Readline = SerialPort.parsers.Readline;
+
+const fs = require('fs');
 
 const arduinoPortAddress = '/dev/ttyACM0';
 
@@ -15,6 +20,35 @@ var dbConnectionPool = mysql.createPool({
   password : 'password',
   database : 'sys'
 });
+
+//CREATE THE WEBSERVER
+
+http.createServer(function (req, res) {
+
+  switch (req.url) {
+    case '/':
+      res.writeHead(200, {'Content-Type': 'text/html'});
+
+      //return the dashboard page
+      fs.readFile(dashboardPageAddress, function(err,data){
+
+        if (!err) {
+          res.write(data);
+          res.end();
+        }else{
+          process.stdout.write('Error loading Index.html: ' + err);
+        }
+      });
+      break;
+  
+    default:
+      process.stdout.write('Received an unrecognised request URL in http.createServer(): /n' + req.url + '/n');
+      break;
+  }
+
+}).listen(webServerPort);
+
+//END OF WEBSERVER CODE
 
 const wss = new WebSocket.Server({ 
   port: 12345
