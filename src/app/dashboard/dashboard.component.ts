@@ -233,8 +233,8 @@ export class DashboardComponent implements OnInit {
 				//populate graph with data here.
 				xAxisTitle = 'Time';
 				yAxisTitle = 'Temperature in Degrees Celsius';
-				yAxisData = ['1','2','3','4','5'];
-				xAxisData = ['10:00','11:00','12:00','13:00',"14:00"];
+				//yAxisData = ['1','2','3','4','5'];
+				//xAxisData = ['10:00','11:00','12:00','13:00',"14:00"];
 				dataSetLabel = 'Temperature Values';
 				maxYValue = 40;
 				maxXValue = 40;
@@ -262,10 +262,10 @@ export class DashboardComponent implements OnInit {
 		var myChart = new Chart(ctx, {
 			type: 'line',
 			data: {
-				labels: [''],
+				labels: this.xAxisData,
 				datasets: [{
 					label: dataSetLabel,
-					data: yAxisData,
+					data: this.yAxisData,
 					fill: false,
 					borderColor: 'green'
 				}]
@@ -276,7 +276,7 @@ export class DashboardComponent implements OnInit {
 						scaleLabel: {
 							display: true,
 							labelString: yAxisTitle,
-							fontSize: 40
+							fontSize: 20
 						},
 						ticks: {
 							beginAtZero: true,
@@ -288,7 +288,7 @@ export class DashboardComponent implements OnInit {
 						scaleLabel: {
 							display: true,
 							labelString: xAxisTitle,
-							fontSize: 40
+							fontSize: 20
 						},
 						ticks: {
 							beginAtZero: true,
@@ -303,10 +303,6 @@ export class DashboardComponent implements OnInit {
 	}
 
 	async getDatabaseData(){
-
-		//var queryStringToSend = this.getEverythingQueryString + this.charts[this.selectedChart];
-
-		//console.log('Sending Query String: ' + queryStringToSend);
 
  		switch (this.selectedChart) {
 			
@@ -334,10 +330,12 @@ export class DashboardComponent implements OnInit {
 							console.log('timeStamp is: ' + timeStamp);
 							console.log('reading is: ' + reading);
 							this.xAxisData.push(timeStamp);
-							this.yAxisData.push(reading);							
+							this.yAxisData.push(reading);
+							
 						}
 					}
-
+					console.log('xAxisData is: ' + this.xAxisData.toString());
+					console.log('yAxisData is: ' + this.yAxisData.toString());
 
 				});
 
