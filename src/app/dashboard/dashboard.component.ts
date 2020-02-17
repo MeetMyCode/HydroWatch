@@ -11,6 +11,7 @@ import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
   })
 
 export class DashboardComponent implements OnInit {
+
 	selectedChart: number = 0;
 	arduinoReading: string;
 	TempGauge: Gauge;
@@ -18,7 +19,9 @@ export class DashboardComponent implements OnInit {
 	EcGauge: Gauge;
 	OrpGauge: Gauge;
 
-	charts = ['temp', 'ph', 'ec','orp'];
+	charts = ["temperature", "ph", "ec","orp"];
+
+	getEverythingQueryString = "SELECT * FROM ";
 
 	//ARDUINO READING PROPERTIES
 	currentTemp: string = "22.65";
@@ -29,6 +32,10 @@ export class DashboardComponent implements OnInit {
 	maxEc:string = '4';
 	currentOrp: string = "300";
 	maxOrp:string = '600';
+
+	//graph properties
+	xAxisData = new Array();
+	yAxisData = new Array();
 
   
 	TempOptions = {
@@ -195,7 +202,7 @@ export class DashboardComponent implements OnInit {
 		
 	};
 
-	constructor(private myWebSocketService: WebSocketService, databaseService: DatabaseControllerService) {}
+	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {}
 
 	ngOnInit(){
     	this.getArduinoReading();
@@ -212,24 +219,25 @@ export class DashboardComponent implements OnInit {
 		//graph variables
 		var xAxisTitle = 'x-axis title';
 		var yAxisTitle = 'y-axis title';
-		var yReadingsData = new Array();
-		var xAxisLabels = new Array();
+		var yAxisData = new Array();
+		var xAxisData = new Array();
 		var dataSetLabel = 'dataSet Label';
-		var maxValue = 0;
+		var maxXValue :any;
+		var maxYValue : any;
 
-		var dataBaseData = this.getDatabaseData(); //returns data for x & y axes, as well as the max value for the y-axis data
+		this.getDatabaseData(); //returns data for x & y axes, as well as the max value for the y-axis data
 
-		switch (this.selectedChart){
-			
+		switch (this.selectedChart){			
 			//temp
 			case 0:
 				//populate graph with data here.
 				xAxisTitle = 'Time';
 				yAxisTitle = 'Temperature in Degrees Celsius';
-				yReadingsData = ['1','2','3','4','5'];
-				xAxisLabels = ['10:00','11:00','12:00','13:00',"14:00"];
+				yAxisData = ['1','2','3','4','5'];
+				xAxisData = ['10:00','11:00','12:00','13:00',"14:00"];
 				dataSetLabel = 'Temperature Values';
-				maxValue = 40;
+				maxYValue = 40;
+				maxXValue = 40;
 				break;
 				
 			//ph	
@@ -251,14 +259,13 @@ export class DashboardComponent implements OnInit {
 				console.log('Unknown Chart Requested - ' + this.selectedChart);			
 				break;
 		}
-
 		var myChart = new Chart(ctx, {
 			type: 'line',
 			data: {
-				labels: xAxisLabels,
+				labels: [''],
 				datasets: [{
 					label: dataSetLabel,
-					data: yReadingsData,
+					data: yAxisData,
 					fill: false,
 					borderColor: 'green'
 				}]
@@ -274,7 +281,7 @@ export class DashboardComponent implements OnInit {
 						ticks: {
 							beginAtZero: true,
 							min: 0,
-							max: maxValue
+							max: maxYValue
 						}
 					}],
 					xAxes: [{
@@ -284,32 +291,67 @@ export class DashboardComponent implements OnInit {
 							fontSize: 40
 						},
 						ticks: {
-							beginAtZero: true
+							beginAtZero: true,
+							min: 0,
+							max: maxXValue
 						}
 					}]
 				}
 			}
 		});
+
 	}
 
-	getDatabaseData(){
+	async getDatabaseData(){
 
-		var data = [new Array(),new Array(), 0]
+		//var queryStringToSend = this.getEverythingQueryString + this.charts[this.selectedChart];
 
-		switch (this.selectedChart) {
+		//console.log('Sending Query String: ' + queryStringToSend);
+
+ 		switch (this.selectedChart) {
 			
+			//temperature
 			case 0:
-				
-				break;
+				var dbResultObserver = await this.databaseService.getData(this.selectedChart);
+				dbResultObserver.subscribe((data)=>{
 
+					//console.log('\nReturned data in getDatabaseData() is: ' + data);
+					var dataIncludingPrefix = JSON.parse(data);
+					console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
+					var prefix = dataIncludingPrefix.substring(0,2);
+					console.log("\nReading prefix from server is: " + prefix);
+					var arrayContainingJson = dataIncludingPrefix.substring(2,);
+					console.log("\nArray containing JSON is: " + arrayContainingJson);
+					var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
+					console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
+					
+					for (const row in dbRowsAsJson) {
+						if (dbRowsAsJson.hasOwnProperty(row)) {
+							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
+							//"1980-02-27 08:23:00" format.
+							var timeStamp :string = (dbRowsAsJson[row]['timestamp']).replace('T',' ').substring(0,19);
+							var reading :string = dbRowsAsJson[row]['temp'];
+							console.log('timeStamp is: ' + timeStamp);
+							console.log('reading is: ' + reading);
+							this.xAxisData.push(timeStamp);
+							this.yAxisData.push(reading);							
+						}
+					}
+
+
+				});
+
+
+				break;
+			//ph
 			case 1:
 				
 				break;
-
+			//ec
 			case 2:
 				
 				break;
-
+			//orp
 			case 3:
 				
 				break;
@@ -319,9 +361,9 @@ export class DashboardComponent implements OnInit {
 				break;
 		}
 
-		return data;
-
 	}
+
+
 
 	initialiseAllGauges() {
 		this.initTempGauge();
@@ -371,10 +413,10 @@ export class DashboardComponent implements OnInit {
 		this.myWebSocketService.getSocket().subscribe(
 			(dataFromServer) => {
 				//console.log('\nTemp: ' + dataFromServer);
-				//console.log('\nprefix char of reading is: '+dataFromServer[0]);
+				//console.log('\nprefix char of reading is: ' + dataFromServer[0]);
 
 				var prefix = dataFromServer[0].toLowerCase();
-				console.log("reading prefix is: " + prefix);
+				//console.log("reading prefix is: " + prefix);
 
 				switch (prefix) {
 					case "t":

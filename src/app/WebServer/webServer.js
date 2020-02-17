@@ -1,19 +1,19 @@
+//import { Observable, of, from, observable } from 'rxjs';
 const SerialPort = require('serialport')
 const mysql = require('mysql');
 const WebSocket = require('ws');
 const http = require('http');
 const path = require('path');
-const mysql = require('mysql');
-
+const fs = require('fs');
 const webServerPort = 8080;
 const dashboardPageAddress = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch/index.html';
 const distDir = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch';
 
-const dbTables = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
+const dbTables2 = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
+const dbTables = {0:"temperature", 1:"ph", 2:"ec", 3:"orp"};
+
 const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
 const Readline = SerialPort.parsers.Readline;
-
-const fs = require('fs');
 
 const arduinoPortAddress = '/dev/ttyACM0';
 
@@ -26,109 +26,181 @@ var dbConnectionPool = mysql.createPool({
 });
 
 //CREATE THE WEBSERVER
+createServer(); 
 
-http.createServer(function (req, res) {
+function createServer(){
+  http.createServer(async function (req, res) {
 
-  //process.stdout.write('\n__dirname is: ' + __dirname);
+    //process.stdout.write('\n__dirname is: ' + __dirname);
 
-  var mimeType = path.extname(req.url);
+    var url = req.url.substring(0,5);
+    var table = req.url.substring(5,);
+    console.log('\nreq.url prefix is: ' + url + ' and table is: ' + dbTables[table]);
 
-  if (req.url === '/') {
-    mimeType = '/';
-  }
-  process.stdout.write('\nreq.url - mimeType is: ' + req.url + ' - ' + mimeType);
+    if (url == "/api/") {
+      switch (req.url) {
+        case '/api/' + table:
+          process.stdout.write('/api/temperature reached successfully!');
+          await getDataFrom(table).then((dbData)=>{
+            process.stdout.write('\ndbData is: ' + dbData);
+            res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            var stringifyString = JSON.stringify(dbData);
+            res.write(stringifyString);
+            process.stdout.write('\nhttp response data is: ' + dbData);
+            res.end();
+          });
 
-  switch (mimeType) {
-    case '/':
-      //return the dashboard page
-      fs.readFile(dashboardPageAddress, function(err,data){
+          break;
+      
+        default:
+          break;
+      }
+    }else{
+      var mimeType = path.extname(req.url);
 
-        if (!err) {
-          res.writeHead(200, {'Content-Type': 'text/html'});
-          res.write(data, 'utf-8');
-          res.end();
-        }else{
-          process.stdout.write('\nError loading index.html: ' + err);
-        }
-      });
-    break;
+      if (req.url === '/') {
+        mimeType = '/';
+      }
+      process.stdout.write('\nreq.url - mimeType is: ' + req.url + ' - ' + mimeType);
 
-    case '.js':
-      fs.readFile(distDir + req.url, function(err,data){
+      switch (mimeType) {
+        case '/':
+          //return the dashboard page
+          fs.readFile(dashboardPageAddress, function(err,data){
 
-        if (!err) {
-          res.writeHead(200, {'Content-Type': 'text/javascript'});
-          res.write(data, 'utf-8');
-          res.end();
-        }else{
-          process.stdout.write('\nError loading .js: ' + err);
-        }
-      });
-    
-    break;
+            if (!err) {
+              res.writeHead(200, {'Content-Type': 'text/html'});
+              res.write(data, 'utf-8');
+              res.end();
+            }else{
+              process.stdout.write('\nError loading index.html: ' + err);
+            }
+          });
+        break;
 
-    case '.css':
-      fs.readFile(distDir + req.url, function(err,data){
+        case '.js':
+          fs.readFile(distDir + req.url, function(err,data){
 
-        if (!err) {
-          res.writeHead(200, {'Content-Type': 'text/css'});
-          res.write(data, 'utf-8');
-          res.end();
-        }else{
-          process.stdout.write('\nError loading .css: ' + err);
-        }
-      });
-    break;
+            if (!err) {
+              res.writeHead(200, {'Content-Type': 'text/javascript'});
+              res.write(data, 'utf-8');
+              res.end();
+            }else{
+              process.stdout.write('\nError loading .js: ' + err);
+            }
+          });
+        
+        break;
 
-    case '.png':
-      fs.readFile(distDir + req.url, function(err,data){
+        case '.css':
+          fs.readFile(distDir + req.url, function(err,data){
 
-        if (!err) {
-          res.writeHead(200, {'Content-Type': 'image/png'});
-          res.write(data);
-          res.end();
-        }else{
-          process.stdout.write('\nError loading .png: ' + err);
-        }
-      });
-    break;
-  
-    case '.ico':
-      fs.readFile(distDir + req.url, function(err,data){
+            if (!err) {
+              res.writeHead(200, {'Content-Type': 'text/css'});
+              res.write(data, 'utf-8');
+              res.end();
+            }else{
+              process.stdout.write('\nError loading .css: ' + err);
+            }
+          });
+        break;
 
-        if (!err) {
-          res.writeHead(200, {'Content-Type': 'image/x-icon'});
-          res.write(data);
-          res.end();
-        }else{
-          process.stdout.write('\nError loading .ico: ' + err);
-        }
-      });
-    break;
+        case '.png':
+          fs.readFile(distDir + req.url, function(err,data){
 
-    case '.jpg':
-      fs.readFile(distDir + req.url, function(err,data){
+            if (!err) {
+              res.writeHead(200, {'Content-Type': 'image/png'});
+              res.write(data);
+              res.end();
+            }else{
+              process.stdout.write('\nError loading .png: ' + err);
+            }
+          });
+        break;
+      
+        case '.ico':
+          fs.readFile(distDir + req.url, function(err,data){
 
-        if (!err) {
-          res.writeHead(200, {'Content-Type': 'image/jpeg'});
-          res.write(data);
-          res.end();
-        }else{
-          process.stdout.write('\nError loading .jpg: ' + err);
-        }
-      });
-    break;
+            if (!err) {
+              res.writeHead(200, {'Content-Type': 'image/x-icon'});
+              res.write(data);
+              res.end();
+            }else{
+              process.stdout.write('\nError loading .ico: ' + err);
+            }
+          });
+        break;
+
+        case '.jpg':
+          fs.readFile(distDir + req.url, function(err,data){
+
+            if (!err) {
+              res.writeHead(200, {'Content-Type': 'image/jpeg'});
+              res.write(data);
+              res.end();
+            }else{
+              process.stdout.write('\nError loading .jpg: ' + err);
+            }
+          });
+        break;
 
 
-    default:
-      process.stdout.write('Received an unrecognised request URL in http.createServer(): ' + req.url + 'END OF URL');
-      break;
-  }
+        default:
+          process.stdout.write('Received an unrecognised request URL in http.createServer(): ' + req.url + 'END OF URL');
+          break;
+      }
+    }
 
-}).listen(webServerPort);
+
+
+  }).listen(webServerPort);  
+}
+
 
 //END OF WEBSERVER CODE
 
+function getDataFrom(table) {
+
+    return new Promise((resolve, reject) => {
+
+      //a query string is received as the incoming message. Execute it against the database.
+      var result = '';
+      var finalResult = '';
+      var baseQueryString = 'SELECT * FROM ';
+      var queryString = baseQueryString + dbTables[table];
+
+      process.stdout.write('\nQuery string is: ' + queryString);
+      dbConnectionPool.getConnection((err, poolConnection) => {
+        if (err) {
+          process.stdout.write('\nError getting pool connection: ' + err);
+        }else{
+          process.stdout.write('\nDatabase Connection from Pool established!');
+
+          poolConnection.query(
+            queryString,
+            function (error, results, fields) {
+              process.stdout.write('\nQuery sent to database: ' + queryString);
+              process.stdout.write('\nResult of Query: ' + JSON.stringify(results));      
+            try {  
+              if (error) throw error;    
+            } catch (error) {
+              process.stdout.write('\nError thrown when trying to connect to db: ' + error);
+            }
+            var prefix = 'tt';
+            result = JSON.stringify(results);
+            finalResult = prefix + result;
+
+            process.stdout.write('\nResult of Database Query is: ' + finalResult);
+            resolve(finalResult);
+
+          });
+          dbConnectionPool.releaseConnection(poolConnection);
+        }
+      })
+
+    })
+
+}
 
 //CREATE WEBSOCKET AND SERIALPORT CONNECTIONS/LISTENERS
 const wss = new WebSocket.Server({ 
@@ -143,39 +215,6 @@ wss.on('connection', function connection(serverSocket) {
 
   // IF THE SERVER GETS A MESSAGE FROM THE CLIENT..
   serverSocket.on('message', function incoming(queryString) {
-
-    //a query string is received as the incoming message. Execute it against the database.
-
-    var result = '';
-    var finalResult = '';
-
-    process.stdout.write('\nreceived: %s', message);
-    dbConnectionPool.getConnection((err, poolConnection) => {
-
-      if (err) {
-        process.stdout.write('\nError getting pool connection: ' + err);
-      }else{
-        process.stdout.write('\nDatabase Connection from Pool established!');
-        
-        dbConnectionPool.query(
-          queryString,
-          function (error, results, fields) {
-      
-          try {  
-            if (error) throw error;    
-          } catch (error) {
-            process.stdout.write('\nError thrown when trying to connect to db: ' + error);
-          }
-          var prefix = 'tt';
-          result = JSON.stringify(results);
-          finalResult = prefix + result;
-
-        });
-      }
-    });
-
-    process.stdout.write('\nResult of Database Query is: ' + result);
-    serverSocket.send(finalResult);
   });
 
   process.stdout.write('\nConnected to Socket!');
@@ -240,25 +279,25 @@ function filterPrefixFromArduinoReading(dataFromArduino, poolConnection){
   switch (prefix) {
     case "t":
       temp = dataFromArduino.substring(1, );
-      sentoDbTable(prefix, temp);
+      sentoDbTable(prefix, temp, poolConnection);
       dbConnectionPool.releaseConnection(poolConnection)
       break;
 
     case "p":
       var ph = dataFromArduino.substring(1, );
-      sentoDbTable(prefix, ph);
+      sentoDbTable(prefix, ph, poolConnection);
       dbConnectionPool.releaseConnection(poolConnection);
       break;
 
     case "e":
       var ec = dataFromArduino.substring(1, );
-      sentoDbTable(prefix,ec);
+      sentoDbTable(prefix,ec, poolConnection);
       dbConnectionPool.releaseConnection(poolConnection);
       break;
 
     case "o":
       var orp = dataFromArduino.substring(1, );
-      sentoDbTable(prefix,orp);
+      sentoDbTable(prefix,orp, poolConnection);
       dbConnectionPool.releaseConnection(poolConnection);
       break;	
 
@@ -269,14 +308,14 @@ function filterPrefixFromArduinoReading(dataFromArduino, poolConnection){
   }
 }
 
-function sentoDbTable(readingPrefix, readingCategory){
+function sentoDbTable(readingPrefix, readingCategory, poolConnection){
 
     //process.stdout.write('\ndate.now.toLocalString is: ' + new Date().toISOString());
 
     var query = 'INSERT INTO ' + dbTables[readingPrefix] + '(timestamp, ' + dbColumnsInUse[readingPrefix] + ') VALUES (?,?)';
     var timeStamp = formatSIODateTimeToSQLDateTime(new Date().toISOString());
   
-    dbConnectionPool.query(
+    poolConnection.query(
       query.toString(),
       [timeStamp,
       readingCategory], 
