@@ -13,6 +13,7 @@ const dbTables2 = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbTables = {0:"temperature", 1:"ph", 2:"ec", 3:"orp"};
 
 const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
+const prefixes = {0:"tt",1:"ph",2:"ec",3:"or",};
 const Readline = SerialPort.parsers.Readline;
 
 const arduinoPortAddress = '/dev/ttyACM0';
@@ -31,30 +32,22 @@ createServer();
 function createServer(){
   http.createServer(async function (req, res) {
 
-    //process.stdout.write('\n__dirname is: ' + __dirname);
-
     var url = req.url.substring(0,5);
     var table = req.url.substring(5,);
     console.log('\nreq.url prefix is: ' + url + ' and table is: ' + dbTables[table]);
 
     if (url == "/api/") {
-      switch (req.url) {
-        case '/api/' + table:
-          process.stdout.write('/api/temperature reached successfully!');
-          await getDataFrom(table).then((dbData)=>{
-            process.stdout.write('\ndbData is: ' + dbData);
-            res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-            var stringifyString = JSON.stringify(dbData);
-            res.write(stringifyString);
-            process.stdout.write('\nhttp response data is: ' + dbData);
-            res.end();
-          });
+      process.stdout.write('api address is: ' + req.url);
+      await getDataFrom(table).then((dbData)=>{
+        process.stdout.write('\ndbData is: ' + dbData);
+        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+        var stringifyString = JSON.stringify(dbData);
+        res.write(stringifyString);
+        process.stdout.write('\nhttp response data is: ' + dbData);
+        res.end();
+      });
 
-          break;
-      
-        default:
-          break;
-      }
+
     }else{
       var mimeType = path.extname(req.url);
 
@@ -186,7 +179,7 @@ function getDataFrom(table) {
             } catch (error) {
               process.stdout.write('\nError thrown when trying to connect to db: ' + error);
             }
-            var prefix = 'tt';
+            var prefix = prefixes[table];
             result = JSON.stringify(results);
             finalResult = prefix + result;
 

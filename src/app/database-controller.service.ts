@@ -9,10 +9,10 @@ import { HttpClient } from '@angular/common/http';
 })
 export class DatabaseControllerService {
 
-	private queryResult :string;
+	//private queryResult :string;
 	private httpBaseAddress = 'http://localhost:8080';
 
-  constructor(private myWebSocket: WebSocketService, private http: HttpClient) { }  
+  	constructor(private myWebSocket: WebSocketService, private http: HttpClient) { }  
   
 	
 	async getData(table): Promise<any>{
@@ -22,26 +22,20 @@ export class DatabaseControllerService {
 		and put this into the returned object.
 		*/
 
-		
+		console.log("table passed to getData() is: " + table);
+
 		var tableData: Observable<string>;
 		var tableDataObservable: Observable<string>;
 
 		return await new Promise((resolve, reject)=>{
 
-			switch (table) {
-				case 0:
-					tableData = this.http.get('\n' + this.httpBaseAddress + '/api/' + table, {
-						responseType: "text"
-					});
+			tableData = this.http.get('\n' + this.httpBaseAddress + '/api/' + table, {
+				responseType: "text"
+			});
 
-					tableDataObservable = from(tableData);
+			tableDataObservable = from(tableData);
 
-					resolve(tableDataObservable);
-					break;
-			
-				default:
-					break;
-			}
+			resolve(tableDataObservable);
 
 		});
 

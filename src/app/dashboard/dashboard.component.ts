@@ -3,6 +3,7 @@ import * as Chart from 'chart.js';
 import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
+import { resolve } from 'dns';
 
 @Component({
 	selector: 'app-dashboard',
@@ -19,6 +20,8 @@ export class DashboardComponent implements OnInit {
 	EcGauge: Gauge;
 	OrpGauge: Gauge;
 
+	myChart: Chart;
+
 	charts = ["temperature", "ph", "ec","orp"];
 
 	getEverythingQueryString = "SELECT * FROM ";
@@ -32,10 +35,6 @@ export class DashboardComponent implements OnInit {
 	maxEc:string = '4';
 	currentOrp: string = "300";
 	maxOrp:string = '600';
-
-	//graph properties
-	xAxisData = new Array();
-	yAxisData = new Array();
 
   
 	TempOptions = {
@@ -212,156 +211,157 @@ export class DashboardComponent implements OnInit {
 		this.initialiseAllGauges();
 	}
   
-	initialiseGraph() {
+	async initialiseGraph() {
+		console.log('Enter initialiseGraph().');
 		var canvas = <HTMLCanvasElement>document.getElementById('myChart');
 		var ctx = canvas.getContext('2d');
 
-		//graph variables
-		var xAxisTitle = 'x-axis title';
-		var yAxisTitle = 'y-axis title';
-		var yAxisData = new Array();
-		var xAxisData = new Array();
-		var dataSetLabel = 'dataSet Label';
-		var maxXValue :any;
-		var maxYValue : any;
+		await this.getDatabaseData().then((dataArray)=>{
 
-		this.getDatabaseData(); //returns data for x & y axes, as well as the max value for the y-axis data
+			console.log('Enter getDatabaseData().then()');
 
-		switch (this.selectedChart){			
-			//temp
-			case 0:
-				//populate graph with data here.
-				xAxisTitle = 'Time';
-				yAxisTitle = 'Temperature in Degrees Celsius';
-				//yAxisData = ['1','2','3','4','5'];
-				//xAxisData = ['10:00','11:00','12:00','13:00',"14:00"];
-				dataSetLabel = 'Temperature Values';
-				maxYValue = 40;
-				maxXValue = 40;
-				break;
-				
-			//ph	
-			case 1:
-				//populate graph with data here.
-				break;
+			//graph variables
+			var xAxisData = new Array();
+			var yAxisData = new Array();
+			var xAxisTitle;
+			var yAxisTitle;
+			var dataSetLabel;
 
-			//ec
-			case 2:
-				//populate graph with data here.
-				break;
+			console.log('graphFromDb is: ' + dataArray.toString());
 
-			//orp
-			case 3:
-				//populate graph with data here.
-				break;
-		
-			default:	
-				console.log('Unknown Chart Requested - ' + this.selectedChart);			
-				break;
-		}
-		var myChart = new Chart(ctx, {
-			type: 'line',
-			data: {
-				labels: this.xAxisData,
-				datasets: [{
-					label: dataSetLabel,
-					data: this.yAxisData,
-					fill: false,
-					borderColor: 'green'
-				}]
-			},
-			options: {				
-				  scales: {
-					yAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: yAxisTitle,
-							fontSize: 20
-						},
-						ticks: {
-							beginAtZero: true,
-							min: 0,
-							max: maxYValue
-						}
-					}],
-					xAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: xAxisTitle,
-							fontSize: 20
-						},
-						ticks: {
-							beginAtZero: true,
-							min: 0,
-							max: maxXValue
-						}
-					}]
-				}
+			xAxisData = dataArray[0];
+			yAxisData = dataArray[1];
+
+			switch (this.selectedChart){			
+				//temp
+				case 0:
+					//populate graph with data here.
+					xAxisTitle = 'Time';
+					yAxisTitle = 'Temperature in Degrees Celsius';
+					dataSetLabel = 'Temp';
+					break;
+					
+				//ph	
+				case 1:
+					//populate graph with data here.
+					xAxisTitle = 'Time';
+					yAxisTitle = 'pH';
+					dataSetLabel = 'pH';
+					break;
+
+				//ec
+				case 2:
+					//populate graph with data here.
+					xAxisTitle = 'Time';
+					yAxisTitle = 'EC in mS/cm';
+					dataSetLabel = 'EC';
+					break;
+
+				//orp
+				case 3:
+					//populate graph with data here.
+					xAxisTitle = 'Time';
+					yAxisTitle = 'ORP in mV';
+					dataSetLabel = 'ORP';
+					break;
+			
+				default:	
+					console.log('Unknown Chart Requested - ' + this.selectedChart);			
+					break;
 			}
+
+			this.myChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: xAxisData,
+					datasets: [{
+						label: dataSetLabel,
+						data: yAxisData,
+						fill: false,
+						borderColor: 'green'
+					}]
+				},
+				options: {				
+					scales: {
+						yAxes: [{
+							scaleLabel: {
+								display: true,
+								labelString: yAxisTitle,
+								fontSize: 20
+							},
+							ticks: {
+								beginAtZero: true,
+								min: 0,
+							}
+						}],
+						xAxes: [{
+							scaleLabel: {
+								display: true,
+								labelString: xAxisTitle,
+								fontSize: 20
+							},
+							ticks: {
+								beginAtZero: true,
+								min: 0,
+							}
+						}]
+					}
+				}
+			});	
+
+		}); //returns data for x & y axes, as well as the max value for the y-axis data
+
+	}
+
+	async getDatabaseData() :Promise<any[]>{
+		console.log('Enter getDatabaseData().');
+
+		return await new Promise(async (resolve,reject)=>{
+
+			var dataArray = new Array();
+
+			var dbResultObserver = await this.databaseService.getData(this.selectedChart);
+			dbResultObserver.subscribe((data)=>{
+
+				//console.log('\nReturned data in getDatabaseData() is: ' + data);
+				var dataIncludingPrefix = JSON.parse(data);
+				console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
+				var prefix = dataIncludingPrefix.substring(0,2);
+				console.log("\nReading prefix from server is: " + prefix);
+				var arrayContainingJson = dataIncludingPrefix.substring(2,);
+				console.log("\nArray containing JSON is: " + arrayContainingJson);
+				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
+				console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
+				
+				var xAxisData = new Array();
+				var yAxisData = new Array();
+
+				for (const row in dbRowsAsJson) {
+					if (dbRowsAsJson.hasOwnProperty(row)) {
+						//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
+						//"1980-02-27 08:23:00" format.
+						var timeStamp :string = (dbRowsAsJson[row]['timestamp']).replace('T',' ').substring(0,19);
+						var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
+						console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
+						console.log('timeStamp is: ' + timeStamp);
+						console.log('reading is: ' + reading);
+						xAxisData.push(timeStamp);
+						yAxisData.push(reading);						
+					}
+				}
+				console.log('xAxisData is: ' + xAxisData.toString());
+				console.log('yAxisData is: ' + yAxisData.toString());
+
+				dataArray = [xAxisData,yAxisData];
+
+				resolve(dataArray);
+
+			});
+
 		});
 
-	}
-
-	async getDatabaseData(){
-
- 		switch (this.selectedChart) {
-			
-			//temperature
-			case 0:
-				var dbResultObserver = await this.databaseService.getData(this.selectedChart);
-				dbResultObserver.subscribe((data)=>{
-
-					//console.log('\nReturned data in getDatabaseData() is: ' + data);
-					var dataIncludingPrefix = JSON.parse(data);
-					console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
-					var prefix = dataIncludingPrefix.substring(0,2);
-					console.log("\nReading prefix from server is: " + prefix);
-					var arrayContainingJson = dataIncludingPrefix.substring(2,);
-					console.log("\nArray containing JSON is: " + arrayContainingJson);
-					var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
-					console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
-					
-					for (const row in dbRowsAsJson) {
-						if (dbRowsAsJson.hasOwnProperty(row)) {
-							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
-							//"1980-02-27 08:23:00" format.
-							var timeStamp :string = (dbRowsAsJson[row]['timestamp']).replace('T',' ').substring(0,19);
-							var reading :string = dbRowsAsJson[row]['temp'];
-							console.log('timeStamp is: ' + timeStamp);
-							console.log('reading is: ' + reading);
-							this.xAxisData.push(timeStamp);
-							this.yAxisData.push(reading);
-							
-						}
-					}
-					console.log('xAxisData is: ' + this.xAxisData.toString());
-					console.log('yAxisData is: ' + this.yAxisData.toString());
-
-				});
-
-
-				break;
-			//ph
-			case 1:
-				
-				break;
-			//ec
-			case 2:
-				
-				break;
-			//orp
-			case 3:
-				
-				break;
-
-
-			default:
-				break;
-		}
 
 	}
-
-
 
 	initialiseAllGauges() {
 		this.initTempGauge();
@@ -463,10 +463,9 @@ export class DashboardComponent implements OnInit {
 
 	}
 
-	ShowChartDetailView(event:Event){
+	async ShowChartDetailView(event:Event){
 		var requestedChart = (<HTMLDivElement>event.target).id;
 
-		//console.log("Requested Chart: " + requestedChart);
 
 		switch (requestedChart){
 			
@@ -497,8 +496,11 @@ export class DashboardComponent implements OnInit {
 				console.log('Unknown Chart Requested - ' + requestedChart);			
 				break;
 		}
+		console.log("Requested Chart: " + requestedChart);
+		console.log("Selected Chart: " + this.selectedChart);
 
-		this.initialiseGraph();
+
+		await this.initialiseGraph();
 		$('#mask').slideToggle(); 
 		$('#DetailView').slideToggle(); 
 
@@ -507,6 +509,15 @@ export class DashboardComponent implements OnInit {
 	CloseOverlay(){
 		$('#DetailView').slideToggle();
 		$('#mask').slideToggle(); 
+
+		this.myChart.destroy();
+
+		//Remove data from Chart.
+		// this.myChart.data.labels.pop();
+		// this.myChart.data.datasets.forEach((dataset) => {
+		// 	dataset.data.pop();
+		// });
+		// this.myChart.update();
 	}
 
 	mousedown(event: Event){
