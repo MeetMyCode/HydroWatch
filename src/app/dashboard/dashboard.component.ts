@@ -3,7 +3,6 @@ import * as Chart from 'chart.js';
 import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
-import { resolve } from 'dns';
 
 @Component({
 	selector: 'app-dashboard',
@@ -70,7 +69,7 @@ export class DashboardComponent implements OnInit {
 		{strokeStyle: "#F03E3E", min: 30, max: 40}, // Red
 		],
 		staticLabels: {
-		font: "2em sans-serif",  // Specifies font
+		font: "1.5em sans-serif",  // Specifies font
 		labels: [0,10,20,30,40],  // Print labels at these values
 		color: "#000000",  // Optional: Label text color
 		fractionDigits: 0  // Optional: Numerical precision. 0=round off.
@@ -111,7 +110,7 @@ export class DashboardComponent implements OnInit {
 		{strokeStyle: "#F03E3E", min: 7, max: 14}, // Red
 		],
 		staticLabels: {
-		font: "2em sans-serif",  // Specifies font
+		font: "1.5em sans-serif",  // Specifies font
 		labels: [0,2,4,6,8,10,12,14],  // Print labels at these values
 		color: "#000000",  // Optional: Label text color
 		fractionDigits: 0  // Optional: Numerical precision. 0=round off.
@@ -152,7 +151,7 @@ export class DashboardComponent implements OnInit {
 		{strokeStyle: "#F03E3E", min: 2, max: 4}, // Red
 		],
 		staticLabels: {
-		font: "2em sans-serif",  // Specifies font
+		font: "1.5em sans-serif",  // Specifies font
 		labels: [0,1,2,3,4],  // Print labels at these values
 		color: "#000000",  // Optional: Label text color
 		fractionDigits: 0  // Optional: Numerical precision. 0=round off.
@@ -193,7 +192,7 @@ export class DashboardComponent implements OnInit {
 		{strokeStyle: "#F03E3E", min: 400, max: 600}, // Red
 		],
 		staticLabels: {
-		font: "2em sans-serif",  // Specifies font
+		font: "1.5em sans-serif",  // Specifies font
 		labels: [0,100,200,300,400,500,600],  // Print labels at these values
 		color: "#000000",  // Optional: Label text color
 		fractionDigits: 0  // Optional: Numerical precision. 0=round off.
@@ -201,11 +200,42 @@ export class DashboardComponent implements OnInit {
 		
 	};
 
-	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {}
+	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {	}
 
 	ngOnInit(){
-    	this.getArduinoReading();
-  	}
+		this.getArduinoReading();
+	  }
+
+	async chartButtonClicked(){
+		//alert("chartButtonClicked event fired!");
+		var eventTargetId = (<HTMLInputElement>event.target).id;
+		switch (eventTargetId) {
+			case 'tempButton':
+				this.selectedChart = 0;
+				break;
+
+			case 'phButton':
+				this.selectedChart = 1;
+				break;
+
+			case 'ecButton':
+				this.selectedChart = 2;
+				break;
+
+			case 'orpButton':
+				this.selectedChart = 3;
+				break;
+		
+			default:
+				console.log('Unknown chart button reaceived in chartButtonClicked().');
+				break;
+		}
+		this.myChart.destroy();
+		await this.initialiseGraph();
+
+	};
+	  
+
 
 	ngAfterViewInit() {
 		this.initialiseAllGauges();
@@ -229,7 +259,10 @@ export class DashboardComponent implements OnInit {
 
 			console.log('graphFromDb is: ' + dataArray.toString());
 
+			//Time labels or x-axis
 			xAxisData = dataArray[0];
+
+			//Sensor reading values for y-axis.
 			yAxisData = dataArray[1];
 
 			switch (this.selectedChart){			
@@ -281,7 +314,7 @@ export class DashboardComponent implements OnInit {
 						borderColor: 'green'
 					}]
 				},
-				options: {				
+				options: {
 					scales: {
 						yAxes: [{
 							scaleLabel: {
@@ -466,29 +499,32 @@ export class DashboardComponent implements OnInit {
 	async ShowChartDetailView(event:Event){
 		var requestedChart = (<HTMLDivElement>event.target).id;
 
-
 		switch (requestedChart){
 			
 			case 'TempValue':
 			case 'TempGauge':
-				$('#temp').click();
+				$('.chartButton').removeClass('active');
+				$('#tempButtonLabel').addClass('active');
 				this.selectedChart = 0;
 				break;
 			case 'PhValue':
 			case 'PhGauge':
-				$('#ph').click();
+				$('.chartButton').removeClass('active');
+				$('#phButtonLabel').addClass('active');
 				this.selectedChart = 1;
 				break;
 
 			case 'EcValue':
 			case 'EcGauge':
-				$('#ec').click();
+				$('.chartButton').removeClass('active');
+				$('#ecButtonLabel').addClass('active');
 				this.selectedChart = 2;
 				break;
 
 			case 'OrpValue':
 			case 'OrpGauge':
-				$('#orp').click();
+				$('.chartButton').removeClass('active');
+				$('#orpButtonLabel').addClass('active');
 				this.selectedChart = 3;
 				break;
 		
@@ -499,25 +535,21 @@ export class DashboardComponent implements OnInit {
 		console.log("Requested Chart: " + requestedChart);
 		console.log("Selected Chart: " + this.selectedChart);
 
-
 		await this.initialiseGraph();
 		$('#mask').slideToggle(); 
 		$('#DetailView').slideToggle(); 
 
 	}
 
+
+
 	CloseOverlay(){
 		$('#DetailView').slideToggle();
 		$('#mask').slideToggle(); 
 
+		//Destroy the chart, ready for re-use.
 		this.myChart.destroy();
 
-		//Remove data from Chart.
-		// this.myChart.data.labels.pop();
-		// this.myChart.data.datasets.forEach((dataset) => {
-		// 	dataset.data.pop();
-		// });
-		// this.myChart.update();
 	}
 
 	mousedown(event: Event){

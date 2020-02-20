@@ -1,108 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
 
-	<head>
-		<meta charset="utf-8">
-		<title>HydroWatch Monitoring Interface</title>
-	</head>
+<div class="container-fluid px-0 mx-0">
 
-	<body id="home">
-		<div class="container-fluid">
-
-			<!--HEADING SECTION-->
-			<div class="col-12 p-0 mt-2 bg-success rounded" id="TitleBar">
-				<div class="col-12 pt-1">
-					<div id="TitleBox" class="text-center rounded m-0 p-0">
-						<label id="Title">HydroWatch</label>
-					</div>
-				</div>
-				<div class="col-12 pb-1 pt-1">
-					<div id="SubTitleBox" class="rounded">
-						<label id="SubTitle">--Dashboard--</label>
-					</div>
+	<!--HEADING SECTION-->
+	<div class="row headingRow justify-content-center">
+		<div class="col-10 offset-1 p-0 m-0 bg-success rounded" id="TitleBar">
+			<div class="w-100 pt-1">
+				<div id="TitleBox" class="text-center rounded m-0 p-0">
+					<label id="Title">HydroWatch</label>
 				</div>
 			</div>
-
-			<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
-			<div class="row">
-				<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
-					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">
-						<p class="readingText">Temperature</p>
-					</div>
-					<div class="ParameterValue rounded-bottom bg-primary" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-						<p class="bubbleText">{{this.currentTemp}}°C</p>
-						<canvas id="TempGauge"></canvas>
-					</div>
-				</div>
-
-				<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
-					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">
-						<p class="readingText">PH</p>
-					</div>
-					<div class="ParameterValue rounded-bottom bg-primary" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-						<p class="bubbleText">{{this.currentPh}}</p>
-						<canvas id="PhGauge"></canvas>
-					</div>
-				</div>
-			</div>
-
-			<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
-			<div class="row">
-				<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
-					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">
-						<p class="readingText">EC</p>
-					</div>
-					<div class="ParameterValue rounded-bottom bg-primary" id="EcValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-						<p class="bubbleText">{{this.currentEc}}mS/cm</p>
-						<canvas id="EcGauge"></canvas>
-					</div>
-				</div>
-
-				<div class="col-sm-5 ParameterContainer bg-transparent">
-					<div class="d-flex justify-content-between pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">
-						<p class="readingText">ORP</p>
-					</div>
-					<div class="ParameterValue rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
-						<p class="bubbleText">{{this.currentOrp}}mV</p>
-						<canvas id="OrpGauge"></canvas>
-					</div>
+			<div class="w-100 py-1">
+				<div id="SubTitleBox" class="rounded">
+					<label id="SubTitle">--Dashboard--</label>
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
-		<div id="mask">
-			<div id="DetailView">
-				<div class="mt-2" id="CloseButtonContainer">
-					<label id="GraphTitleBar">Graphs and Stats
-						<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
-					</label>
-				</div>
 
-				<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
-					<label class="btn btn-secondary chartButton active">
-						<input type="radio" name="options" id="ph" autocomplete="off"> pH
-					</label>
-
-					<label class="btn btn-secondary chartButton">
-						<input type="radio" name="options" id="ec" autocomplete="off"> EC
-					</label>
-
-					<label class="btn btn-secondary chartButton">
-						<input type="radio" name="options" id="orp" autocomplete="off"> ORP
-					</label>
-
-					<label class="btn btn-secondary chartButton">
-						<input type="radio" name="options" id="temp" autocomplete="off"> Temp
-					</label>
-				</div>
-
-				<div class="m-2" id="ChartContainer">
-					<canvas class="h-100" id="myChart"></canvas>
-				</div>
+	<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
+	<div class="row readingsRow">
+		<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
+			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">
+				<p class="readingText">Temperature</p>
+			</div>
+			<div class="d-flex justify-content-center align-items-center ParameterValue p-2 rounded-bottom bg-primary" id="TempValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+				<p class="bubbleText">{{this.currentTemp}}°C</p>
+				<canvas id="TempGauge"></canvas>
 			</div>
 		</div>
 
+		<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
+			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">
+				<p class="readingText">PH</p>
+			</div>
+			<div class="d-flex align-items-center ParameterValue p-2 rounded-bottom bg-primary" id="PhValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+				<p class="bubbleText">{{this.currentPh}}</p>
+				<canvas id="PhGauge"></canvas>
+			</div>
+		</div>
+	</div>
 
-	</body>
-</html>
+	<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
+	<div class="row readingsRow">
+		<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
+			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">
+				<p class="readingText">EC</p>
+			</div>
+			<div class="d-flex justify-content-center align-items-center ParameterValue p-2 rounded-bottom bg-primary" id="EcValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+				<p class="bubbleText">{{this.currentEc}}mS/cm</p>
+				<canvas id="EcGauge"></canvas>
+			</div>
+		</div>
+
+		<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
+			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">
+				<p class="readingText">ORP</p>
+			</div>
+			<div class="d-flex justify-content-center align-items-center ParameterValue p-2 rounded-bottom bg-primary" id="OrpValue" (mousedown)="mousedown($event)" (mouseup)="mouseup($event)" (click)="ShowChartDetailView($event)">
+				<p class="bubbleText">{{this.currentOrp}}mV</p>
+				<canvas id="OrpGauge"></canvas>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
+<div id="mask">
+	<div id="DetailView">
+		<div class="mt-2 d-flex justify-content-end" id="CloseButtonContainer">
+			<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
+		</div>
+
+		<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
+			<label class="btn btn-secondary chartButton active" id="phButtonLabel">
+				<input type="radio" name="options" class="tableButton" id="phButton" autocomplete="off" (click)="chartButtonClicked($event)"> pH
+			</label>
+
+			<label class="btn btn-secondary chartButton" id="ecButtonLabel">
+				<input type="radio" name="options" class="tableButton" id="ecButton" autocomplete="off" (click)="chartButtonClicked($event)"> EC
+			</label>
+
+			<label class="btn btn-secondary chartButton" id="orpButtonLabel">
+				<input type="radio" name="options" class="tableButton" id="orpButton" autocomplete="off" (click)="chartButtonClicked($event)"> ORP
+			</label>
+
+			<label class="btn btn-secondary chartButton" id="tempButtonLabel">
+				<input type="radio" name="options" class="tableButton" id="tempButton" autocomplete="off" (click)="chartButtonClicked($event)"> Temp
+			</label>
+		</div>
+
+		<div class="m-2" id="ChartContainer">
+			<canvas class="h-100" id="myChart"></canvas>
+		</div>
+	</div>
+</div>
+
