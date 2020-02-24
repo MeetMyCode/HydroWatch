@@ -1,5 +1,5 @@
 
-<div class="container-fluid px-0 mx-0">
+<div class="container-fluid">
 
 	<!--HEADING SECTION-->
 	<div class="row headingRow justify-content-center">
@@ -10,7 +10,7 @@
 				</div>
 			</div>
 			<div class="w-100 py-1">
-				<div id="SubTitleBox" class="rounded">
+				<div id="SubTitleBox" class="rounded d-flex flex-column justify-content-center">
 					<label id="SubTitle">--Dashboard--</label>
 				</div>
 			</div>
@@ -20,7 +20,7 @@
 
 	<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
 	<div class="row readingsRow">
-		<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
+		<div class="col-md-5 offset-md-1 ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">
 				<p class="readingText">Temperature</p>
 			</div>
@@ -30,7 +30,7 @@
 			</div>
 		</div>
 
-		<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
+		<div class="col-md-5 justify-content-between ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">
 				<p class="readingText">PH</p>
 			</div>
@@ -43,7 +43,7 @@
 
 	<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
 	<div class="row readingsRow">
-		<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
+		<div class="col-md-5 offset-md-1 ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">
 				<p class="readingText">EC</p>
 			</div>
@@ -53,7 +53,7 @@
 			</div>
 		</div>
 
-		<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
+		<div class="col-md-5 justify-content-between ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">
 				<p class="readingText">ORP</p>
 			</div>
@@ -90,9 +90,15 @@
 			</label>
 		</div>
 
-		<div class="m-2" id="ChartContainer">
-			<canvas class="h-100" id="myChart"></canvas>
+		<div class="chartWrapper">
+			<div class="chartAreaWrapper">
+				<div class="chartAreaWrapper2">
+					<canvas id="myChart"></canvas>
+				</div>
+			</div>
+			<canvas id="axis-Test"></canvas>
 		</div>
+
 	</div>
 </div>
 

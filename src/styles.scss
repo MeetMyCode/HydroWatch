@@ -6,11 +6,7 @@
 /* You can add global styles to this file, and also import other style files */
 /* line 1, /Users/rossco/Desktop/Web Development/HydroWatchMockups/css/styles.scss */
 body, html{
-  padding: 0px 0px 0px 0px !important;
-  margin: 0px 0px 0px 0px !important;
-  width: 100vw;
-  height: 100vh;
-  //overflow: hidden;
+  overscroll-behavior: none;
 }
 
   
@@ -20,12 +16,6 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   background-attachment: fixed;
-  //background-size:100% auto;
-  // position:absolute;
-  // top:0;
-  // bottom:0;
-  // right:0;
-  // left:0;
 }
   
 //MEDIA QUERIES
@@ -73,7 +63,4 @@ body {
   .bubbleText {
     font-size: 3vw !important;
   }
-  // .row{
-  //   height: 35% !important;
-  // }
 }

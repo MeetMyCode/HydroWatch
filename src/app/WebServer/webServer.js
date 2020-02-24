@@ -12,7 +12,7 @@ const distDir = '/Users/rosshiggins/Desktop/Software Development/Angular Develop
 const dbTables2 = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbTables = {0:"temperature", 1:"ph", 2:"ec", 3:"orp"};
 
-const dbColumnsInUse = {"t":"temp", "p":"ph", "e":"ec", "o":"orp"};
+const dbColumnsInUse = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const prefixes = {0:"tt",1:"ph",2:"ec",3:"or",};
 const Readline = SerialPort.parsers.Readline;
 
@@ -39,11 +39,11 @@ function createServer(){
     if (url == "/api/") {
       process.stdout.write('api address is: ' + req.url);
       await getDataFrom(table).then((dbData)=>{
-        process.stdout.write('\ndbData is: ' + dbData);
+        //process.stdout.write('\ndbData is: ' + dbData);
         res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
         var stringifyString = JSON.stringify(dbData);
         res.write(stringifyString);
-        process.stdout.write('\nhttp response data is: ' + dbData);
+        //process.stdout.write('\nhttp response data is: ' + dbData);
         res.end();
       });
 
@@ -155,6 +155,7 @@ function createServer(){
 function getDataFrom(table) {
 
     return new Promise((resolve, reject) => {
+      process.stdout.write('\nTrying to get data from table: ' + table);
 
       //a query string is received as the incoming message. Execute it against the database.
       var result = '';
@@ -173,17 +174,19 @@ function getDataFrom(table) {
             queryString,
             function (error, results, fields) {
               process.stdout.write('\nQuery sent to database: ' + queryString);
-              process.stdout.write('\nResult of Query: ' + JSON.stringify(results));      
+              //process.stdout.write('\nResult of Query: ' + JSON.stringify(results));      
             try {  
               if (error) throw error;    
             } catch (error) {
-              process.stdout.write('\nError thrown when trying to connect to db: ' + error);
+              process.stdout.write('\nError thrown when trying to connect to db in poolConnection.query(): ' + error);
+              process.stdout.write('\nQuery string was: ' + queryString);
+
             }
             var prefix = prefixes[table];
             result = JSON.stringify(results);
             finalResult = prefix + result;
 
-            process.stdout.write('\nResult of Database Query is: ' + finalResult);
+            process.stdout.write(`\nResult of Database Query is: ' + ${results.length} entries`);
             resolve(finalResult);
 
           });
@@ -305,7 +308,7 @@ function sentoDbTable(readingPrefix, readingCategory, poolConnection){
 
     //process.stdout.write('\ndate.now.toLocalString is: ' + new Date().toISOString());
 
-    var query = 'INSERT INTO ' + dbTables[readingPrefix] + '(timestamp, ' + dbColumnsInUse[readingPrefix] + ') VALUES (?,?)';
+    var query = 'INSERT INTO ' + dbTables2[readingPrefix] + '(timestamp, ' + dbColumnsInUse[readingPrefix] + ') VALUES (?,?)';
     var timeStamp = formatSIODateTimeToSQLDateTime(new Date().toISOString());
   
     poolConnection.query(
@@ -318,8 +321,12 @@ function sentoDbTable(readingPrefix, readingCategory, poolConnection){
         if (error) throw error;    
       } catch (error) {
         process.stdout.write('\nError thrown when trying to connect to db: ' + error);
+        process.stdout.write('\nQuery string was: ' + query.toString());
+        process.stdout.write('\nTable prefix was: ' + readingPrefix);
+
+
       }
-      process.stdout.write('\nreading written to database successfully!');
+      process.stdout.write('\nreading written to database successfully! Query string was:' + query.toString());
     });
   
     //process.stdout.write('\nAwaiting database write...');

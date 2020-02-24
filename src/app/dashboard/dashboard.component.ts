@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import * as Chart from 'chart.js';
 import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
+import * as Hammer from 'hammerjs';
+import 'chartjs-plugin-zoom';
+var Chart = require('chart.js');
 
 @Component({
 	selector: 'app-dashboard',
@@ -12,16 +14,14 @@ import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 
 export class DashboardComponent implements OnInit {
 
+	//numPixelsPerDataPoint = 1; //used to set the width of the graph container, based on the screen size.
+
 	selectedChart: number = 0;
 	arduinoReading: string;
 	TempGauge: Gauge;
 	PhGauge: Gauge;
 	EcGauge: Gauge;
 	OrpGauge: Gauge;
-
-	myChart: Chart;
-
-	charts = ["temperature", "ph", "ec","orp"];
 
 	getEverythingQueryString = "SELECT * FROM ";
 
@@ -34,6 +34,11 @@ export class DashboardComponent implements OnInit {
 	maxEc:string = '4';
 	currentOrp: string = "300";
 	maxOrp:string = '600';
+
+	myChart = null;
+	resizeCount: number;
+	charts = ["temperature", "ph", "ec","orp"];
+	chartMaxValues = {0:this.maxTemp, 1:this.maxPh, 2:this.maxEc, 3:this.maxOrp};
 
   
 	TempOptions = {
@@ -204,9 +209,9 @@ export class DashboardComponent implements OnInit {
 
 	ngOnInit(){
 		this.getArduinoReading();
-	  }
+	}
 
-	async chartButtonClicked(){
+	async chartButtonClicked(event){
 		//alert("chartButtonClicked event fired!");
 		var eventTargetId = (<HTMLInputElement>event.target).id;
 		switch (eventTargetId) {
@@ -230,21 +235,22 @@ export class DashboardComponent implements OnInit {
 				console.log('Unknown chart button reaceived in chartButtonClicked().');
 				break;
 		}
+
 		this.myChart.destroy();
 		await this.initialiseGraph();
 
+		//Auto scroll to the beginning.
+		var val = $('.chartAreaWrapper').scrollLeft();
+		$('.chartAreaWrapper').scrollLeft(-val);	
 	};
-	  
-
 
 	ngAfterViewInit() {
 		this.initialiseAllGauges();
 	}
   
 	async initialiseGraph() {
+
 		console.log('Enter initialiseGraph().');
-		var canvas = <HTMLCanvasElement>document.getElementById('myChart');
-		var ctx = canvas.getContext('2d');
 
 		await this.getDatabaseData().then((dataArray)=>{
 
@@ -257,13 +263,15 @@ export class DashboardComponent implements OnInit {
 			var yAxisTitle;
 			var dataSetLabel;
 
-			console.log('graphFromDb is: ' + dataArray.toString());
+			//console.log('graphFromDb is: ' + dataArray.toString());
 
 			//Time labels or x-axis
-			xAxisData = dataArray[0];
+			xAxisData = this.reformatXAxisData(dataArray[0]);
+			var arrayOfDates = xAxisData[0];
+			//console.log('Start array of dates = ' + arrayOfDates);
 
 			//Sensor reading values for y-axis.
-			yAxisData = dataArray[1];
+			yAxisData = dataArray[1];	
 
 			switch (this.selectedChart){			
 				//temp
@@ -303,47 +311,266 @@ export class DashboardComponent implements OnInit {
 					break;
 			}
 
-			this.myChart = new Chart(ctx, {
-				type: 'line',
-				data: {
-					labels: xAxisData,
-					datasets: [{
-						label: dataSetLabel,
-						data: yAxisData,
-						fill: false,
-						borderColor: 'green'
+			//test chart code start
+
+			console.log('yAxisdata count is: ' + yAxisData.length);
+			//console.log(`arrayOfDates is ${arrayOfDates}`);
+			var rectangleSet = false;
+			var chartData = {
+				//labels: this.generateLabels(),
+				labels: arrayOfDates,
+				datasets: [{
+					labels: dataSetLabel,
+					//labels: dataSetLabel,
+					//data: this.generateData()
+					data: yAxisData,
+					fill: false,
+					borderColor: 'green'
+				}]
+			};
+			var chartOptions = {
+				maintainAspectRatio: false,
+				responsive: true,
+				tooltips: {
+					titleFontSize: 0,
+					titleMarginBottom: 0,
+					bodyFontSize: 12
+				},
+				legend: {
+					display: false
+				},
+				scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: xAxisTitle,
+							fontSize: 20,							
+						},
+						ticks: {
+							beginAtZero: true,
+							min: 0,
+							fontSize: 12,
+							display: true,
+						}
+					}],
+					yAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: yAxisTitle,
+							fontSize: 20,							
+						},
+						ticks: {
+							display: true,
+							min: 0,
+							max: parseInt(this.chartMaxValues[this.selectedChart]),
+							fontSize: 12,
+							beginAtZero: true
+						}
 					}]
 				},
-				options: {
-					scales: {
-						yAxes: [{
-							scaleLabel: {
-								display: true,
-								labelString: yAxisTitle,
-								fontSize: 20
+				plugins: {
+					zoom: {
+						// Container for pan options
+						pan: {
+							// Boolean to enable panning
+							enabled: true,
+				
+							// Panning directions. Remove the appropriate direction to disable
+							// Eg. 'y' would only allow panning in the y direction
+							// A function that is called as the user is panning and returns the
+							// available directions can also be used:
+							//   mode: function({ chart }) {
+							//     return 'xy';
+							//   },
+							mode: 'xy',
+				
+							rangeMin: {
+								// Format of min pan range depends on scale type
+								x: null,
+								y: null
 							},
-							ticks: {
-								beginAtZero: true,
-								min: 0,
-							}
-						}],
-						xAxes: [{
-							scaleLabel: {
-								display: true,
-								labelString: xAxisTitle,
-								fontSize: 20
+							rangeMax: {
+								// Format of max pan range depends on scale type
+								x: null,
+								y: null
 							},
-							ticks: {
-								beginAtZero: true,
-								min: 0,
-							}
-						}]
+				
+							// Function called while the user is panning
+							onPan: function({chart}) { console.log(`I'm panning!!!`); },
+							// Function called once panning is completed
+							onPanComplete: function({chart}) { console.log(`I was panned!!!`); }
+						},
+				
+						// Container for zoom options
+						zoom: {
+							// Boolean to enable zooming
+							enabled: true,
+				
+							// Enable drag-to-zoom behavior
+							drag: true,
+				
+							// Drag-to-zoom effect can be customized
+							// drag: {
+							// 	 borderColor: 'rgba(225,225,225,0.3)'
+							// 	 borderWidth: 5,
+							// 	 backgroundColor: 'rgb(225,225,225)',
+							// 	 animationDuration: 0
+							// },
+				
+							// Zooming directions. Remove the appropriate direction to disable
+							// Eg. 'y' would only allow zooming in the y direction
+							// A function that is called as the user is zooming and returns the
+							// available directions can also be used:
+							//   mode: function({ chart }) {
+							//     return 'xy';
+							//   },
+							mode: 'xy',
+				
+							rangeMin: {
+								// Format of min zoom range depends on scale type
+								x: null,
+								y: null
+							},
+							rangeMax: {
+								// Format of max zoom range depends on scale type
+								x: null,
+								y: null
+							},
+				
+							// Speed of zoom via mouse wheel
+							// (percentage of zoom on a wheel event)
+							speed: 0.1,
+				
+							// Function called while the user is zooming
+							onZoom: function({chart}) { console.log(`I'm zooming!!!`); },
+							// Function called once zooming is completed
+							onZoomComplete: function({chart}) { console.log(`I was zoomed!!!`); }
+						}
+					}
+				},
+				animation: {
+					duration: 1,
+					onComplete: function () {
+						if (!rectangleSet) {
+
+							var scale = window.devicePixelRatio;                       
+
+							//var sourceCanvas = myChart.chart.canvas;
+							var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+
+							var copyWidth = myChart.scales['y-axis-0'].width - 10;
+							var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
+
+							var targetCtx = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+
+							targetCtx.scale(scale, scale);
+							targetCtx.canvas.width = copyWidth * scale;
+							targetCtx.canvas.height = copyHeight * scale;
+
+							targetCtx.canvas.style.width = `${copyWidth}px`;
+							targetCtx.canvas.style.height = `${copyHeight}px`;
+							targetCtx.drawImage(sourceCanvas, 0, 0, copyWidth * scale, copyHeight * scale, 0, 0, copyWidth * scale, copyHeight * scale);
+
+							var sourceCtx = sourceCanvas.getContext('2d');
+
+							// Normalize coordinate system to use css pixels.
+
+							sourceCtx.clearRect(0, 0, copyWidth * scale, copyHeight * scale);
+							rectangleSet = true;
+
+
+						}
+					},
+					onProgress: function () {
+						if (rectangleSet === true) {
+							var copyWidth = myChart.scales['y-axis-0'].width;
+							var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
+
+							var sourceCtx = myChart.chart.canvas.getContext('2d');
+							sourceCtx.clearRect(0, 0, copyWidth, copyHeight);
+						}
 					}
 				}
-			});	
+			}	
+	
+			//Make sure to set the canvas width and height, otherwise a drawImage() method error is thrown 
+			//because a dimensonless canvas has been passed in to new Chart().
+			var myChartCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+			myChartCanvas.width = innerWidth;
+			myChartCanvas.height = innerHeight;
+			var myChart = new Chart(myChartCanvas, {
+				type: 'line',
+				data: chartData,
+				options: chartOptions
+			});
+
+			this.myChart = myChart;
+			//this.addData(5, chartTest); 
+
+			//test chart code end
 
 		}); //returns data for x & y axes, as well as the max value for the y-axis data
 
+	}
+
+	//test functions start
+	generateData() {
+		var chartData = [];
+		for (var x = 0; x < 100; x++) {
+			chartData.push(Math.floor((Math.random() * 100) + 1));
+		}
+		return chartData;
+	}
+
+	addData(numData, chart) {
+		for (var i = 0; i < numData; i++) {
+			chart.data.datasets[0].data.push(Math.random() * 100);
+			chart.data.labels.push("Label" + i);
+			var newwidth = $('.chartAreaWrapper2').width() + 60;
+			$('.chartAreaWrapper2').width(newwidth);
+		}
+	}
+
+	generateLabels() {
+        var chartLabels = [];
+        for (var x = 0; x < 300; x++) {
+            chartLabels.push("Label" + x);
+        }
+        return chartLabels;
+    }
+
+	//test functions end
+
+	reformatXAxisData(xAxisDataArray){
+
+		var arrayOfDates = new Array();
+		var arrayOfTimes = new Array();
+
+		xAxisDataArray.forEach(dateTimeElement => {
+
+			//console.log('dateTimeElement array is: '+ dateTimeElement);
+			
+			//Split array of DateTime strings into seperate array containing a date and a time.
+			var dateAndTime = dateTimeElement.split(' ');
+			//console.log('dateAndTime is: ' + dateAndTime);
+
+			//Reformat the dates from yyy-mm-dd to dd-mm-yyyy
+			var dateParts = dateAndTime[0].split('-');
+			var year = dateParts[0];
+			var mon = dateParts[1];
+			var day = dateParts[2];
+			var stringToAdd = `${day}-${mon}-${year}`;
+
+			//push to arrays for return values.
+			arrayOfDates.push(stringToAdd);
+			arrayOfTimes.push(dateAndTime[1]);
+		});
+
+		//console.log('Formatted dateArray: ' + arrayOfDates);
+		//console.log('Formatted timeArray: ' + arrayOfTimes);
+
+		return [arrayOfDates,arrayOfTimes]
 	}
 
 	async getDatabaseData() :Promise<any[]>{
@@ -358,13 +585,13 @@ export class DashboardComponent implements OnInit {
 
 				//console.log('\nReturned data in getDatabaseData() is: ' + data);
 				var dataIncludingPrefix = JSON.parse(data);
-				console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
+				//console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
 				var prefix = dataIncludingPrefix.substring(0,2);
-				console.log("\nReading prefix from server is: " + prefix);
+				//console.log("\nReading prefix from server is: " + prefix);
 				var arrayContainingJson = dataIncludingPrefix.substring(2,);
-				console.log("\nArray containing JSON is: " + arrayContainingJson);
+				//console.log("\nArray containing JSON is: " + arrayContainingJson);
 				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
-				console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
+				//console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
 				
 				var xAxisData = new Array();
 				var yAxisData = new Array();
@@ -375,15 +602,15 @@ export class DashboardComponent implements OnInit {
 						//"1980-02-27 08:23:00" format.
 						var timeStamp :string = (dbRowsAsJson[row]['timestamp']).replace('T',' ').substring(0,19);
 						var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
-						console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
-						console.log('timeStamp is: ' + timeStamp);
-						console.log('reading is: ' + reading);
+						//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
+						//console.log('timeStamp is: ' + timeStamp);
+						//console.log('reading is: ' + reading);
 						xAxisData.push(timeStamp);
 						yAxisData.push(reading);						
 					}
 				}
-				console.log('xAxisData is: ' + xAxisData.toString());
-				console.log('yAxisData is: ' + yAxisData.toString());
+				//console.log(`xAxisData is: ${xAxisData.toString()} containing ${xAxisData.length} entries`);
+				//console.log(`yAxisData is: ${yAxisData.toString()} containing ${yAxisData.length} entries`);
 
 				dataArray = [xAxisData,yAxisData];
 
@@ -404,25 +631,41 @@ export class DashboardComponent implements OnInit {
 	}
 
 	initTempGauge(){
-		var TempCanvas = document.getElementById('TempGauge'); // your canvas element
+		var TempCanvas = <HTMLCanvasElement>document.getElementById('TempGauge'); // your canvas element
+		var ctx = TempCanvas.getContext('2d');
+		ctx.canvas.width = innerWidth;
+		ctx.canvas.height = innerHeight;
+
 		this.TempGauge = new Gauge(TempCanvas).setOptions(this.TempOptions); // create sexy gauge!
 		this.TempGauge.maxValue = this.maxTemp; // set max gauge value
 		this.TempGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
 		this.TempGauge.animationSpeed = 1; // set animation speed (32 is default value)
 		this.TempGauge.set(22); // set actual value
+
+
 	}
 
 	initPhGauge(){
-		var PhCanvas = document.getElementById('PhGauge'); // your canvas element
+		var PhCanvas = <HTMLCanvasElement>document.getElementById('PhGauge'); // your canvas element
+		var ctx = PhCanvas.getContext('2d');
+		ctx.canvas.width = innerWidth;
+		ctx.canvas.height = innerHeight;
+
 		this.PhGauge = new Gauge(PhCanvas).setOptions(this.PhOptions); // create sexy gauge!
 		this.PhGauge.maxValue = this.maxPh; // set max gauge value
 		this.PhGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
 		this.PhGauge.animationSpeed = 1; // set animation speed (32 is default value)
 		this.PhGauge.set(6.5); // set actual value
+
+
 	}
 
 	initEcGauge(){
-		var EcCanvas = document.getElementById('EcGauge'); // your canvas element
+		var EcCanvas = <HTMLCanvasElement>document.getElementById('EcGauge'); // your canvas element
+		var ctx = EcCanvas.getContext('2d');
+		ctx.canvas.width = innerWidth;
+		ctx.canvas.height = innerHeight;
+
 		this.EcGauge = new Gauge(EcCanvas).setOptions(this.EcOptions); // create sexy gauge!
 		this.EcGauge.maxValue = this.maxEc; // set max gauge value
 		this.EcGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
@@ -431,7 +674,11 @@ export class DashboardComponent implements OnInit {
 	}
 
 	initOrpGauge(){
-		var OrpCanvas = document.getElementById('OrpGauge'); // your canvas element
+		var OrpCanvas = <HTMLCanvasElement>document.getElementById('OrpGauge'); // your canvas element
+		var ctx = OrpCanvas.getContext('2d');
+		ctx.canvas.width = innerWidth;
+		ctx.canvas.height = innerHeight;
+
 		this.OrpGauge = new Gauge(OrpCanvas).setOptions(this.OrpOptions); // create sexy gauge!
 		this.OrpGauge.maxValue = this.maxOrp; // set max gauge value
 		this.OrpGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
@@ -534,14 +781,12 @@ export class DashboardComponent implements OnInit {
 		}
 		console.log("Requested Chart: " + requestedChart);
 		console.log("Selected Chart: " + this.selectedChart);
-
+ 
 		await this.initialiseGraph();
-		$('#mask').slideToggle(); 
-		$('#DetailView').slideToggle(); 
+		$('#mask').toggle(); 
+		$('#DetailView').toggle();
 
 	}
-
-
 
 	CloseOverlay(){
 		$('#DetailView').slideToggle();
@@ -672,6 +917,13 @@ export class DashboardComponent implements OnInit {
 
 	}
 
+	onPinch(){
+		console.log('Pinched!');
+	}
+
+	onPan(){
+		console.log('Panned!');
+	}
 
 
 }//END OF COMPONENT

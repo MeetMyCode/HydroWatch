@@ -9,7 +9,7 @@ import { DatabaseControllerService } from './database-controller.service';
 import { TestComponent } from './test-component/test-component.component';
 import { TempComponent } from './temp/temp.component';
 import { HttpClientModule } from '@angular/common/http';
-
+import * as Hammer from 'hammerjs';
 
 @NgModule({
   declarations: [

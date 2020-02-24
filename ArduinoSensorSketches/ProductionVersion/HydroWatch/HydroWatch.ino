@@ -98,7 +98,7 @@ void GetEcReading(){
   //**TO READ ppm, replace 5.0 WITH 3200 TO READ ppm AND TO CALIBRATE TO ppm.**
   //PREPEND 'P' (P = PH, O=ORP, E=EC, T=TEMP) FOR FILTERING OUT AT FRONTEND
   String ecPrefix = "e";
-  int reading = analogRead(A1)*(3200/1024);
+  int reading = sensorValue*5/1024;
   Serial.print(ecPrefix + String(reading) + "\r\n"); 
 
   //**WAIT FOR 1 SECOND BEFORE THE NEXT LOOP**

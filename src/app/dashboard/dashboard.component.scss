@@ -7,41 +7,119 @@ p{
   margin: 0px 0px 0px 0px;
 }
 
-// .container-fluid{
-//   height: 100% !important;
-//   width: 100% !important;
-//   padding: 0px 0px 0px 0px !important;
-//   margin: 0px 0px 0px 0px !important;
-// }
+body, html{
+  width: 100vw;
+  height: 100vh;
+}
 
-#ChartContainer{
-  display: flex;
-  justify-content: center;
-  background-color: white;
+//temp css start
+
+.chartWrapper {
+  //background-color: red;
+  position: absolute;
+  left: 2.5%;
+  width: 95%;
   height: 80%;
 }
 
-.chartFilter{
-  width: auto;
-  height: auto;
+.chartWrapper > canvas {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  pointer-events: none !important;
 }
+
+.chartAreaWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: scroll;
+
+  //background-color: blue;
+}
+
+.chartAreaWrapper2{
+  position: relative;
+  width: auto;
+  height: 98%;
+}
+
+.chartAreaWrapper2 > canvas{
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  pointer-events: none !important;
+}
+
+canvas{
+  width: 100%;
+  height: 100%;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  //background-color: white;
+}
+
+//temp css end
+
+// canvas{
+//   width: 100%;
+//   height: 100%;
+//   margin: 0px 0px 0px 0px;
+//   padding: 0px 0px 0px 0px;
+//   //background-color: white;
+// }
+
+// .container{
+//   height: 75vh;
+//   width: 95vw;
+//   background-color: black;  
+// }
+
+// .chartOrigin{
+//   position: relative;
+//   margin: 0px 0px 0px 0px;
+//   padding: 0px 0px 0px 0px;
+//   overflow-x: scroll !important;
+//   height: 80%;
+//   width: 100%;
+//   //display: flexbox;
+//   //justify-content: center;
+// }
+
+// #ChartContainer{
+//   position: relative;
+//   margin: 0px 0px 0px 0px;
+//   padding: 0px 0px 0px 0px;
+//   //display: flexbox;
+//   //justify-content: center;
+//   //background-color: rgba(51,204,0,0.45);
+//   height: 95%; 
+//   //width: 1000%; //this value makes the scrolling work!
+// }
+
+// #myChart{
+//   margin: 0px 0px 0px 0px !important;
+//   padding: 0px 0px 0px 0px !important;
+//   //width: 100% !important;
+//   height: 100% !important;
+// }
+
+
 
 .chartButton{
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
   border-radius: 20px;
-  //color: #FFFFFF;
   color: black;
   font-family: Arial;
   font-size: 1em;
-  //background-color: #0275D8;
   background-color: white;
   opacity: 0.7;
   box-shadow: 1px 1px 20px 0px #000000;
   -webkit-box-shadow: 1px 1px 20px 0px #000000;
   -moz-box-shadow: 1px 1px 20px 0px #000000;
-  //text-shadow: 1px 1px 20px #000000;
-  //border: solid #337FED 5px;
   text-decoration: none;
   text-align: center;
   margin: 5px 5px 5px 5px;
@@ -74,9 +152,10 @@ p{
   height: 95%;
   width: 95%;
   position: fixed; /* Stay in place */
-  z-index: 2; /* Sit on top */
+  //z-index: 2; /* Sit on top */
   left: 2.5%;
   top: 2.5%;
+
   overflow: hidden; /* Disable scrolling */
   margin: 0; 
   padding:0;
@@ -92,35 +171,21 @@ p{
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1;
+  //z-index: 1;
   height: 100vh;
   width: 100vw;
   background-color: black;
+  // overflow: hidden;
+  // margin: 0;
+  // padding: 0;
 }
 
 #CloseButtonContainer{
-  //background-color: white;
-  width: 100%;
-  height: auto;
   padding: 0;
 }
 
 #CloseButton{
   float: right;
-  height: auto;
-  width: auto;
-}
-
-#GraphTitleBar{
-  display: inline-block;
-  //width: 100%;
-  height: auto;
-  //background-color: green;
-  line-height: 30px;
-  text-align: center;
-  font-size: 30px;
-  margin: 0;
-  padding: 0;
 }
 
 #TitleBar{
@@ -131,7 +196,6 @@ p{
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
-  height: 100%;
   border-style: outset !important;
 }
 
@@ -143,13 +207,7 @@ p{
   border-style: solid;
   border-color: black;
   border-radius: 1px;
-  //max-height: 10%;
-  //min-height: 5%;
 }
- 
-//#Title{
-  //height: 40px;
-//}
 
 #SubTitleBox{
   background-color: white;
@@ -166,54 +224,34 @@ p{
 #SubTitle{
   font-size: 1.5em;
   margin: auto;
-  line-height: 25px;
 }
- 
-.blank{
-  background-color: lightgray;
-}
-
-// .col{
-//   padding: 0 0;
-//   margin: 0 0;
-//   background-color: red !important;
-// }
-
-
 
 .headingRow{
   margin: 0px 0px 0px 0px !important;
   padding: 0px 0px 0px 0px !important;
-  height: 20vh !important;
   //background-color: white;
 }
 
 .readingsRow{
-  //height: 39vh !important;
-  margin: 1vh 0px 0px 0px !important;
+  //height: 25%;
+  margin: 0px 0px 0px 0px !important;
   padding: 0px 0px 0px 0px !important;
   background-color: white;
 }
  
 .ParameterContainer{
   background-color: lightgray;
-  //margin-top: 5px;
+  margin-top: 5px;
 }
  
 .ParameterTitle{
   font-size: 1.5em;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
-  box-shadow: 10px 10px 5px 0px rgbaß(0,0,0,0.75);
+  box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   border-top-style: outset;
   border-left-style: outset;
   border-right-style: outset;
-}
-
-.ParameterIcon{
-  display: inline-block;
-  width: 25px;
-  height: 25px;
 }
  
 .ParameterValue:hover{
@@ -221,30 +259,19 @@ p{
 }
  
 .ParameterValue{
-  height: 250px;
-  //width: 100%;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   border-bottom-style: outset;
   border-left-style: outset;
   border-right-style: outset;
-}
-
- 
+} 
 .ParameterValue:hover{
   background: red;
 }
 
 .readingText{
   color: black;
-}
-
-canvas{
-  width: 100%;
-  height: 100% !important;
-  //padding: 5px 5px 5px 5px !important;
-  //background-color: white;
 }
 
 .bubbleText{

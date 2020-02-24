@@ -4,7 +4,7 @@
     "outDir": "./out-tsc/app",
     "types": [
       "jquery",
-      "chart.js",
+      //"chart.js",
       "node"
     ]
   },
