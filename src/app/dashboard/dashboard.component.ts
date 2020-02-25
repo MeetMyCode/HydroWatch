@@ -14,6 +14,8 @@ var Chart = require('chart.js');
 
 export class DashboardComponent implements OnInit {
 
+	/*#region PROPERTIES/CONSTANTS/VARIABLES ETC*/
+
 	numPixelsPerDataPoint = 10; //used to set the width of the graph container, based on the screen size.
 
 	readingEvery = 5; //This should be the same as the delay() value in the arduino sketch main loop, measured in seconds.
@@ -48,7 +50,7 @@ export class DashboardComponent implements OnInit {
 	TempOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 0.8, // Relative radius
+		radiusScale: 0.9, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -89,7 +91,7 @@ export class DashboardComponent implements OnInit {
 	PhOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 0.8, // Relative radius
+		radiusScale: 0.9, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -130,7 +132,7 @@ export class DashboardComponent implements OnInit {
 	EcOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 0.8, // Relative radius
+		radiusScale: 0.9, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -171,7 +173,7 @@ export class DashboardComponent implements OnInit {
 	OrpOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 0.8, // Relative radius
+		radiusScale: 0.9, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -209,11 +211,20 @@ export class DashboardComponent implements OnInit {
 		
 	};
 
+	/*#endregion*/
+
 	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {	}
 
 	ngOnInit(){
 		this.getArduinoReading();
+		this.startTimer() //Start the timer function that informs the user hwhen the next reading will be.
 	}
+
+	ngAfterViewInit() {
+		this.initialiseAllGauges();
+	}
+
+	/*#region MAIN METHODS*/
 
 	async chartButtonClicked(event){
 		//alert("chartButtonClicked event fired!");
@@ -247,10 +258,6 @@ export class DashboardComponent implements OnInit {
 		var val = $('.chartAreaWrapper').scrollLeft();
 		$('.chartAreaWrapper').scrollLeft(-val);	
 	};
-
-	ngAfterViewInit() {
-		this.initialiseAllGauges();
-	}
   
 	async initialiseGraph() {
 
@@ -438,75 +445,6 @@ export class DashboardComponent implements OnInit {
 
 	}
 
-	setChartAreaWidth(yAxisData){
-
-		if (yAxisData.length >= 50 && ((yAxisData.length * this.numPixelsPerDataPoint) >= $(window).height())) {
-			$('.chartAreaWrapper2').css('width', `${yAxisData.length * this.numPixelsPerDataPoint}px`);
-		}else{
-			$('.chartAreaWrapper2').css('width', '100%');
-		}
-
-	}
-
-	//test functions start
-	generateData() {
-		var chartData = [];
-		for (var x = 0; x < 100; x++) {
-			chartData.push(Math.floor((Math.random() * 100) + 1));
-		}
-		return chartData;
-	}
-
-	addData(numData, chart) {
-		for (var i = 0; i < numData; i++) {
-			chart.data.datasets[0].data.push(Math.random() * 100);
-			chart.data.labels.push("Label" + i);
-			var newwidth = $('.chartAreaWrapper2').width() + 60;
-			$('.chartAreaWrapper2').width(newwidth);
-		}
-	}
-
-	generateLabels() {
-        var chartLabels = [];
-        for (var x = 0; x < 300; x++) {
-            chartLabels.push("Label" + x);
-        }
-        return chartLabels;
-    }
-
-	//test functions end
-
-	reformatXAxisData(xAxisDataArray){
-
-		var arrayOfDates = new Array();
-		var arrayOfTimes = new Array();
-
-		xAxisDataArray.forEach(dateTimeElement => {
-
-			//console.log('dateTimeElement array is: '+ dateTimeElement);
-			
-			//Split array of DateTime strings into seperate array containing a date and a time.
-			var dateAndTime = dateTimeElement.split(' ');
-			//console.log('dateAndTime is: ' + dateAndTime);
-
-			//Reformat the dates from yyy-mm-dd to dd-mm-yyyy
-			var dateParts = dateAndTime[0].split('-');
-			var year = dateParts[0];
-			var mon = dateParts[1];
-			var day = dateParts[2];
-			var stringToAdd = `${day}-${mon}-${year}`;
-
-			//push to arrays for return values.
-			arrayOfDates.push(stringToAdd);
-			arrayOfTimes.push(dateAndTime[1]);
-		});
-
-		//console.log('Formatted dateArray: ' + arrayOfDates);
-		//console.log('Formatted timeArray: ' + arrayOfTimes);
-
-		return [arrayOfDates,arrayOfTimes]
-	}
-
 	async getDatabaseData() :Promise<any[]>{
 		console.log('Enter getDatabaseData().');
 
@@ -556,6 +494,150 @@ export class DashboardComponent implements OnInit {
 
 
 	}
+
+	async ShowChartDetailView(event:Event){
+		var requestedChart = (<HTMLDivElement>event.target).id;
+
+		switch (requestedChart){
+			
+			case 'TempValue':
+			case 'TempGauge':
+				$('.chartButton').removeClass('active');
+				$('#tempButtonLabel').addClass('active');
+				this.selectedChart = 0;
+				break;
+			case 'PhValue':
+			case 'PhGauge':
+				$('.chartButton').removeClass('active');
+				$('#phButtonLabel').addClass('active');
+				this.selectedChart = 1;
+				break;
+
+			case 'EcValue':
+			case 'EcGauge':
+				$('.chartButton').removeClass('active');
+				$('#ecButtonLabel').addClass('active');
+				this.selectedChart = 2;
+				break;
+
+			case 'OrpValue':
+			case 'OrpGauge':
+				$('.chartButton').removeClass('active');
+				$('#orpButtonLabel').addClass('active');
+				this.selectedChart = 3;
+				break;
+		
+			default:	
+				console.log('Unknown Chart Requested - ' + requestedChart);			
+				break;
+		}
+		console.log("Requested Chart: " + requestedChart);
+		console.log("Selected Chart: " + this.selectedChart);
+ 
+		await this.initialiseGraph();
+		$('#mask').toggle(); 
+		$('#DetailView').toggle();
+
+	}
+
+		getArduinoReading(){
+
+		this.myWebSocketService.getSocket().subscribe(
+			(dataFromServer) => {
+				//console.log('\nTemp: ' + dataFromServer);
+				//console.log('\nprefix char of reading is: ' + dataFromServer[0]);
+
+				var prefix = dataFromServer[0].toLowerCase();
+				//console.log("reading prefix is: " + prefix);
+
+				//Update the countdown value on the dashboard every time data from server is received.
+				if (this.timeTillReading <= 0) {
+					this.timeTillReading = 5;
+				}else{
+					this.timeTillReading = Math.floor(this.timeTillReading - (this.readingEvery/this.sensorCount)); //4 readings (1 per sensor) every send, so knock off 0.25 for each reading.
+				}
+
+				switch (prefix) {
+					case "t":
+						var temp = dataFromServer.substring(1, );
+						//$('#TempValue').text(temp);
+						this.TempGauge.set(temp);
+						this.currentTemp = temp;
+
+						break;
+
+					case "p":
+						var ph = dataFromServer.substring(1, );
+						//$('#PhValue').text(ph);
+						this.PhGauge.set(ph);
+						this.currentPh = ph;
+						break;
+
+					case "e":
+
+						var ec = dataFromServer.substring(1, );
+						//$('#EcTdsValue').text(ec);
+						this.EcGauge.set(ec);
+						this.currentEc = ec;
+						break;
+
+					case "o":
+						var orp = dataFromServer.substring(1, );
+						//$('#OrpValue').text(orp);
+						this.OrpGauge.set(orp);
+						this.currentOrp = orp;
+						break;	
+
+					default:
+						console.log('Error - Unknown');
+						break;
+				}
+			},
+			error => {
+				console.log(error);
+			},
+			() => {
+				console.log('Connection Closed!');
+				alert('Connection Closed!');
+			}		
+		);
+
+	}
+
+	/*#endregion*/
+
+
+	/*#region METHODS - DUMMY DATA GENERATION FOR CHART*/
+
+	generateData() {
+		var chartData = [];
+		for (var x = 0; x < 100; x++) {
+			chartData.push(Math.floor((Math.random() * 100) + 1));
+		}
+		return chartData;
+	}
+
+	addData(numData, chart) {
+		for (var i = 0; i < numData; i++) {
+			chart.data.datasets[0].data.push(Math.random() * 100);
+			chart.data.labels.push("Label" + i);
+			var newwidth = $('.chartAreaWrapper2').width() + 60;
+			$('.chartAreaWrapper2').width(newwidth);
+		}
+	}
+
+	generateLabels() {
+        var chartLabels = [];
+        for (var x = 0; x < 300; x++) {
+            chartLabels.push("Label" + x);
+        }
+        return chartLabels;
+	}
+	
+	/*#endregion*/
+
+	
+	/*#region METHODS RELATING TO THE GAUGES*/
 
 	initialiseAllGauges() {
 		this.initTempGauge();
@@ -620,113 +702,60 @@ export class DashboardComponent implements OnInit {
 		this.OrpGauge.set(300); // set actual value
 	}	
 
-	getArduinoReading(){
+	/*#endregion*/
 
-		this.myWebSocketService.getSocket().subscribe(
-			(dataFromServer) => {
-				//console.log('\nTemp: ' + dataFromServer);
-				//console.log('\nprefix char of reading is: ' + dataFromServer[0]);
+	
+	/*#region UTILITY METHODS*/
 
-				var prefix = dataFromServer[0].toLowerCase();
-				//console.log("reading prefix is: " + prefix);
+	setChartAreaWidth(yAxisData){
 
-				//Update the countdown value on the dashboard every time data from server is received.
-				if (this.timeTillReading <= 0) {
-					this.timeTillReading = 5;
-				}else{
-					this.timeTillReading = Math.floor(this.timeTillReading - (this.readingEvery/this.sensorCount)); //4 readings (1 per sensor) every send, so knock off 0.25 for each reading.
-				}
-
-				switch (prefix) {
-					case "t":
-						var temp = dataFromServer.substring(1, );
-						//$('#TempValue').text(temp);
-						this.TempGauge.set(temp);
-						this.currentTemp = temp;
-
-						break;
-
-					case "p":
-						var ph = dataFromServer.substring(1, );
-						//$('#PhValue').text(ph);
-						this.PhGauge.set(ph);
-						this.currentPh = ph;
-						break;
-
-					case "e":
-
-						var ec = dataFromServer.substring(1, );
-						//$('#EcTdsValue').text(ec);
-						this.EcGauge.set(ec);
-						this.currentEc = ec;
-						break;
-
-					case "o":
-						var orp = dataFromServer.substring(1, );
-						//$('#OrpValue').text(orp);
-						this.OrpGauge.set(orp);
-						this.currentOrp = orp;
-						break;	
-
-					default:
-						console.log('Error - Unknown');
-						break;
-				}
-			},
-			error => {
-				console.log(error);
-			},
-			() => {
-				console.log('Connection Closed!');
-				alert('Connection Closed!');
-			}		
-		);
+		if (yAxisData.length >= 50 && ((yAxisData.length * this.numPixelsPerDataPoint) >= $(window).height())) {
+			$('.chartAreaWrapper2').css('width', `${yAxisData.length * this.numPixelsPerDataPoint}px`);
+		}else{
+			$('.chartAreaWrapper2').css('width', '100%');
+		}
 
 	}
 
-	async ShowChartDetailView(event:Event){
-		var requestedChart = (<HTMLDivElement>event.target).id;
+	reformatXAxisData(xAxisDataArray){
 
-		switch (requestedChart){
+		var arrayOfDates = new Array();
+		var arrayOfTimes = new Array();
+
+		xAxisDataArray.forEach(dateTimeElement => {
+
+			//console.log('dateTimeElement array is: '+ dateTimeElement);
 			
-			case 'TempValue':
-			case 'TempGauge':
-				$('.chartButton').removeClass('active');
-				$('#tempButtonLabel').addClass('active');
-				this.selectedChart = 0;
-				break;
-			case 'PhValue':
-			case 'PhGauge':
-				$('.chartButton').removeClass('active');
-				$('#phButtonLabel').addClass('active');
-				this.selectedChart = 1;
-				break;
+			//Split array of DateTime strings into seperate array containing a date and a time.
+			var dateAndTime = dateTimeElement.split(' ');
+			//console.log('dateAndTime is: ' + dateAndTime);
 
-			case 'EcValue':
-			case 'EcGauge':
-				$('.chartButton').removeClass('active');
-				$('#ecButtonLabel').addClass('active');
-				this.selectedChart = 2;
-				break;
+			//Reformat the dates from yyy-mm-dd to dd-mm-yyyy
+			var dateParts = dateAndTime[0].split('-');
+			var year = dateParts[0];
+			var mon = dateParts[1];
+			var day = dateParts[2];
+			var stringToAdd = `${day}-${mon}-${year}`;
 
-			case 'OrpValue':
-			case 'OrpGauge':
-				$('.chartButton').removeClass('active');
-				$('#orpButtonLabel').addClass('active');
-				this.selectedChart = 3;
-				break;
-		
-			default:	
-				console.log('Unknown Chart Requested - ' + requestedChart);			
-				break;
-		}
-		console.log("Requested Chart: " + requestedChart);
-		console.log("Selected Chart: " + this.selectedChart);
- 
-		await this.initialiseGraph();
-		$('#mask').toggle(); 
-		$('#DetailView').toggle();
+			//push to arrays for return values.
+			arrayOfDates.push(stringToAdd);
+			arrayOfTimes.push(dateAndTime[1]);
+		});
 
+		//console.log('Formatted dateArray: ' + arrayOfDates);
+		//console.log('Formatted timeArray: ' + arrayOfTimes);
+
+		return [arrayOfDates,arrayOfTimes]
+	}
+	
+	startTimer(){
+		setInterval(()=>{
+			if (this.timeTillReading <= 0) {
+				this.timeTillReading = this.readingEvery;
+			} else {
+				this.timeTillReading -= 1;
+			}
+		},1000)
 	}
 
 	CloseOverlay(){
@@ -858,5 +887,6 @@ export class DashboardComponent implements OnInit {
 
 	}
 
+	/*#endregion*/
 
 }//END OF COMPONENT

@@ -5,8 +5,10 @@
 
 /* You can add global styles to this file, and also import other style files */
 /* line 1, /Users/rossco/Desktop/Web Development/HydroWatchMockups/css/styles.scss */
-body, html{
+html, body{
   overscroll-behavior: none;
+  height: 100%;
+  width: 100%;
 }
 
   

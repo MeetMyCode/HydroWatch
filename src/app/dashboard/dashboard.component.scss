@@ -1,21 +1,28 @@
-//@import "../../../node_modules/rfs/scss";
-
 //SASS VARIABLES
 $chartSelectorButton: #0275d8;
+
+/*#region TAG SPECIFIC CSS*/
 
 p{
   margin: 0px 0px 0px 0px;
 }
 
-.container-fluid{
-  height: 100%;
+canvas{
   width: 100%;
+  height: 100%;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+  //background-color: white;
 }
 
 body, html{
   width: 100%;
   height: 100%;
 }
+
+/*#endregion*/
+
+/*#region CHART SPECIFIC CSS*/ 
 
 .chartWrapper {
   //background-color: red;
@@ -57,14 +64,6 @@ body, html{
   //pointer-events: none !important;
 }
 
-canvas{
-  width: 100%;
-  height: 100%;
-  margin: 0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
-  //background-color: white;
-}
-
 .chartButton{
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
@@ -100,6 +99,10 @@ canvas{
 .chartButton:active{
   background-color: green;
 }
+
+/*#endregion*/
+
+/*#region OVERLAY CSS*/
 
 #DetailView{
   display: none;
@@ -141,6 +144,10 @@ canvas{
 #CloseButton{
   float: right;
 }
+
+/*#endregion*/
+
+/*#region DASHBOARD CSS*/
 
 #TitleBar{
   background-image: url('../../assets/Images/bgTitleBar1cropped.jpg');
@@ -200,9 +207,13 @@ canvas{
   margin: 0;
 }
 
+.container{
+  height: 100%;
+}
+
 .readingsRow{
-  //height: 20% !important;
-  margin: 5px 0px 0px 0px !important;
+  height: 40% !important;
+  margin: 0px 0px 0px 0px !important;
   padding: 0px 0px 0px 0px !important;
   background-color: pink;
 }
@@ -210,8 +221,7 @@ canvas{
 .ParameterContainer{
   background-color: black;
   margin-top: 5px;
-  //height: 100%;
-
+  //height: 100px !important;
 }
  
 .ParameterTitle{
@@ -231,9 +241,9 @@ canvas{
 }
  
 .ParameterValue{
-  //height: 50% !important;
-  //width: 100%;
-  padding-bottom: 20px !important;
+  height: 90% !important;
+  width: 100%;
+  //padding-bottom: 20px !important;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
   box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
@@ -259,7 +269,11 @@ canvas{
 .bubbleText{
   z-index: 100;
   position: absolute;
-  top: 30px;
+  top: 20px;
   right: 25px;
   font-size: 2em;
 }
+
+/*#endregion*/
+
+
