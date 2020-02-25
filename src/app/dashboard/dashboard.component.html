@@ -1,5 +1,5 @@
 
-<div class="container-fluid">
+<div class="container">
 
 	<!--HEADING SECTION-->
 	<div class="row headingRow justify-content-center">
@@ -10,17 +10,18 @@
 				</div>
 			</div>
 			<div class="w-100 py-1">
-				<div id="SubTitleBox" class="rounded d-flex flex-column justify-content-center">
-					<label id="SubTitle">--Dashboard--</label>
+				<div id="SubTitleBox" class="rounded d-flex justify-content-between">
+					<p class="SubTitle"></p>
+					<p class="SubTitle">--Dashboard--</p>
+					<p id="nextReadingText" class="SubTitle">Next Reading in: {{ timeTillReading }}s</p>
 				</div>
 			</div>
 		</div>
 	</div>
 
-
 	<!--FIRST ROW, 2 PARAMETERS (TEMP & PH)-->
-	<div class="row readingsRow">
-		<div class="col-md-5 offset-md-1 ParameterContainer bg-transparent">
+	<div class="row readingsRow h-35">
+		<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="TempTitle">
 				<p class="readingText">Temperature</p>
 			</div>
@@ -30,7 +31,7 @@
 			</div>
 		</div>
 
-		<div class="col-md-5 justify-content-between ParameterContainer bg-transparent">
+		<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="PhTitle">
 				<p class="readingText">PH</p>
 			</div>
@@ -42,8 +43,8 @@
 	</div>
 
 	<!--SECOND ROW, 2 PARAMETERS (EC/TDS & ORP)-->
-	<div class="row readingsRow">
-		<div class="col-md-5 offset-md-1 ParameterContainer bg-transparent">
+	<div class="row readingsRow h-35">
+		<div class="col-sm-5 offset-sm-1 ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="EcTitle">
 				<p class="readingText">EC</p>
 			</div>
@@ -53,7 +54,7 @@
 			</div>
 		</div>
 
-		<div class="col-md-5 justify-content-between ParameterContainer bg-transparent">
+		<div class="col-sm-5 justify-content-between ParameterContainer bg-transparent">
 			<div class="d-flex align-items-center pl-3 ParameterTitle rounded-top bg-success" id="OrpTitle">
 				<p class="readingText">ORP</p>
 			</div>

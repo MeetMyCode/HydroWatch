@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
-import * as Hammer from 'hammerjs';
-import 'chartjs-plugin-zoom';
 var Chart = require('chart.js');
+
+
 
 @Component({
 	selector: 'app-dashboard',
@@ -14,10 +14,14 @@ var Chart = require('chart.js');
 
 export class DashboardComponent implements OnInit {
 
-	//numPixelsPerDataPoint = 1; //used to set the width of the graph container, based on the screen size.
+	numPixelsPerDataPoint = 10; //used to set the width of the graph container, based on the screen size.
+
+	readingEvery = 5; //This should be the same as the delay() value in the arduino sketch main loop, measured in seconds.
+	sensorCount = 3; //Should be four sensors once you have bought them all.
+	timeTillReading = 5; //this is the reading bound to the webpage interface that informs the user when the next reading will occur.
 
 	selectedChart: number = 0;
-	arduinoReading: string;
+	arduinoReading: string; //this is the reaading received from the mcu, formatted as prefix (specifies which sensor) + reading.
 	TempGauge: Gauge;
 	PhGauge: Gauge;
 	EcGauge: Gauge;
@@ -44,7 +48,7 @@ export class DashboardComponent implements OnInit {
 	TempOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 1, // Relative radius
+		radiusScale: 0.8, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -85,7 +89,7 @@ export class DashboardComponent implements OnInit {
 	PhOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 1, // Relative radius
+		radiusScale: 0.8, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -126,7 +130,7 @@ export class DashboardComponent implements OnInit {
 	EcOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 1, // Relative radius
+		radiusScale: 0.8, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -167,7 +171,7 @@ export class DashboardComponent implements OnInit {
 	OrpOptions = {
 		angle: 0, // The span of the gauge arc
 		lineWidth: 0.2, // The line thickness
-		radiusScale: 1, // Relative radius
+		radiusScale: 0.8, // Relative radius
 		pointer: {
 		length: 0.55, // // Relative to gauge radius
 		strokeWidth: 0.035, // The thickness
@@ -273,6 +277,9 @@ export class DashboardComponent implements OnInit {
 			//Sensor reading values for y-axis.
 			yAxisData = dataArray[1];	
 
+			this.setChartAreaWidth(yAxisData);
+
+
 			switch (this.selectedChart){			
 				//temp
 				case 0:
@@ -318,13 +325,13 @@ export class DashboardComponent implements OnInit {
 			var rectangleSet = false;
 			var chartData = {
 				//labels: this.generateLabels(),
-				labels: arrayOfDates,
+				labels: this.generateLabels(),
 				datasets: [{
 					labels: dataSetLabel,
 					//labels: dataSetLabel,
 					//data: this.generateData()
 					data: yAxisData,
-					fill: false,
+					fill: true,
 					borderColor: 'green'
 				}]
 			};
@@ -332,12 +339,10 @@ export class DashboardComponent implements OnInit {
 				maintainAspectRatio: false,
 				responsive: true,
 				tooltips: {
-					titleFontSize: 0,
-					titleMarginBottom: 0,
-					bodyFontSize: 12
+					enabled: true
 				},
 				legend: {
-					display: false
+					display: true
 				},
 				scales: {
 					xAxes: [{
@@ -369,86 +374,6 @@ export class DashboardComponent implements OnInit {
 						}
 					}]
 				},
-				plugins: {
-					zoom: {
-						// Container for pan options
-						pan: {
-							// Boolean to enable panning
-							enabled: true,
-				
-							// Panning directions. Remove the appropriate direction to disable
-							// Eg. 'y' would only allow panning in the y direction
-							// A function that is called as the user is panning and returns the
-							// available directions can also be used:
-							//   mode: function({ chart }) {
-							//     return 'xy';
-							//   },
-							mode: 'xy',
-				
-							rangeMin: {
-								// Format of min pan range depends on scale type
-								x: null,
-								y: null
-							},
-							rangeMax: {
-								// Format of max pan range depends on scale type
-								x: null,
-								y: null
-							},
-				
-							// Function called while the user is panning
-							onPan: function({chart}) { console.log(`I'm panning!!!`); },
-							// Function called once panning is completed
-							onPanComplete: function({chart}) { console.log(`I was panned!!!`); }
-						},
-				
-						// Container for zoom options
-						zoom: {
-							// Boolean to enable zooming
-							enabled: true,
-				
-							// Enable drag-to-zoom behavior
-							drag: true,
-				
-							// Drag-to-zoom effect can be customized
-							// drag: {
-							// 	 borderColor: 'rgba(225,225,225,0.3)'
-							// 	 borderWidth: 5,
-							// 	 backgroundColor: 'rgb(225,225,225)',
-							// 	 animationDuration: 0
-							// },
-				
-							// Zooming directions. Remove the appropriate direction to disable
-							// Eg. 'y' would only allow zooming in the y direction
-							// A function that is called as the user is zooming and returns the
-							// available directions can also be used:
-							//   mode: function({ chart }) {
-							//     return 'xy';
-							//   },
-							mode: 'xy',
-				
-							rangeMin: {
-								// Format of min zoom range depends on scale type
-								x: null,
-								y: null
-							},
-							rangeMax: {
-								// Format of max zoom range depends on scale type
-								x: null,
-								y: null
-							},
-				
-							// Speed of zoom via mouse wheel
-							// (percentage of zoom on a wheel event)
-							speed: 0.1,
-				
-							// Function called while the user is zooming
-							onZoom: function({chart}) { console.log(`I'm zooming!!!`); },
-							// Function called once zooming is completed
-							onZoomComplete: function({chart}) { console.log(`I was zoomed!!!`); }
-						}
-					}
-				},
 				animation: {
 					duration: 1,
 					onComplete: function () {
@@ -478,8 +403,6 @@ export class DashboardComponent implements OnInit {
 
 							sourceCtx.clearRect(0, 0, copyWidth * scale, copyHeight * scale);
 							rectangleSet = true;
-
-
 						}
 					},
 					onProgress: function () {
@@ -506,11 +429,22 @@ export class DashboardComponent implements OnInit {
 			});
 
 			this.myChart = myChart;
+
 			//this.addData(5, chartTest); 
 
 			//test chart code end
 
 		}); //returns data for x & y axes, as well as the max value for the y-axis data
+
+	}
+
+	setChartAreaWidth(yAxisData){
+
+		if (yAxisData.length >= 50 && ((yAxisData.length * this.numPixelsPerDataPoint) >= $(window).height())) {
+			$('.chartAreaWrapper2').css('width', `${yAxisData.length * this.numPixelsPerDataPoint}px`);
+		}else{
+			$('.chartAreaWrapper2').css('width', '100%');
+		}
 
 	}
 
@@ -695,6 +629,13 @@ export class DashboardComponent implements OnInit {
 
 				var prefix = dataFromServer[0].toLowerCase();
 				//console.log("reading prefix is: " + prefix);
+
+				//Update the countdown value on the dashboard every time data from server is received.
+				if (this.timeTillReading <= 0) {
+					this.timeTillReading = 5;
+				}else{
+					this.timeTillReading = Math.floor(this.timeTillReading - (this.readingEvery/this.sensorCount)); //4 readings (1 per sensor) every send, so knock off 0.25 for each reading.
+				}
 
 				switch (prefix) {
 					case "t":
@@ -915,14 +856,6 @@ export class DashboardComponent implements OnInit {
 			break;
 		}
 
-	}
-
-	onPinch(){
-		console.log('Pinched!');
-	}
-
-	onPan(){
-		console.log('Panned!');
 	}
 
 
