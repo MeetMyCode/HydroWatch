@@ -190,8 +190,8 @@ body, html{
   text-align: right !important;
 }
  
-#SubTitle{
-  font-size: 1.5em;
+.SubTitle{
+  font-size: 1em;
   margin: auto;
 }
 
@@ -202,17 +202,17 @@ body, html{
   background-color: red;
 }
 
-.row{
-  padding: 0;
-  margin: 0;
-}
+// .row{
+//   padding: 0;
+//   margin: 0;
+// }
 
 .container{
   height: 100%;
 }
 
 .readingsRow{
-  height: 40% !important;
+  //height: 40% !important; //dont set this as is screws up stacking on small screens.
   margin: 0px 0px 0px 0px !important;
   padding: 0px 0px 0px 0px !important;
   background-color: pink;
@@ -241,7 +241,7 @@ body, html{
 }
  
 .ParameterValue{
-  height: 90% !important;
+  height: 86% !important;
   width: 100%;
   //padding-bottom: 20px !important;
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);

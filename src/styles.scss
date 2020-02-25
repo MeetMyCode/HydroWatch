@@ -35,34 +35,37 @@ body {
   html, body{
     overflow: auto !important;
   }
+  #nextReadingText{
+    font-size: 0.9em;
+  }
 }
 
 @include media-breakpoint-only(sm) {
   .bubbleText {
-    font-size: 0.8em !important;
+    font-size: 3em !important;
   }
 }
 
 @include media-breakpoint-only(md) {
   .bubbleText {
-    font-size: 1.1em !important;
+    font-size: 1.8em !important;
   }
 }
 
 @include media-breakpoint-only(lg) {
   .bubbleText {
-    font-size: 1.6em !important;
+    font-size: 2.2em !important;
   }
 }
 
 @include media-breakpoint-only(xl) {
   .bubbleText {
-    font-size: 2em !important;
+    font-size: 2.5em !important;
   }
 }
 
 @include media-breakpoint-up(xl) {
   .bubbleText {
-    font-size: 3vw !important;
+    font-size: 2.5em !important;
   }
 }
