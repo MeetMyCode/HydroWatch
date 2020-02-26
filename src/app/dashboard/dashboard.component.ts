@@ -298,9 +298,12 @@ export class DashboardComponent implements OnInit {
 
 			//Disable the mag buttons the number of readings is too low.
 			if (yAxisData.length < this.defaultPixelsPerDataPoint) {
-				$('.magBtn').css('disabled','true');
+				console.log(`y-axisdata length too small - ${yAxisData.length} - disabling now.`);
+				$('.magBtn').prop('disabled',true);
+
 			}else{
-				$('.magBtn').css('disabled','false');
+				console.log(`y-axisdata length fine - ${yAxisData.length} - disabling cancelled.`);
+				$('.magBtn').prop('disabled',false);
 			}
 
 			this.setChartAreaWidth(yAxisData);
@@ -660,12 +663,12 @@ export class DashboardComponent implements OnInit {
 		//console.log(`dataArrayLength is ${dataArrayLength}`);
 		if (dataArrayLength >= this.tempPixelsPerDataPoint && ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width())) {
 			newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
-			$('#magMinusBtn').css('disabled','false');
+			//$('#magMinusBtn').css('disabled','false');
 			console.log('Negative Mag button enabled!');
 
 		}else{
 			newWidth = '100%';
-			$('#magMinusBtn').css('disabled','true');
+			//$('#magMinusBtn').css('disabled','true');
 			this.tempPixelsPerDataPoint++; //Smallest width reached so don't decrement any further.
 			console.log('Negative Mag button disabled!');
 			

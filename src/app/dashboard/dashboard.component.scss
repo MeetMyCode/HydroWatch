@@ -119,14 +119,36 @@ body, html{
   height: 100%;
 }
 
-.magBtn{
+.magBtn {
   height: 100%;
   width: 50px;
   margin-right: 10px;
+
+	box-shadow:inset 0px -3px 0px 0px #caefab;
+	background:linear-gradient(to bottom, #77d42a 5%, #5cb811 100%);
+	background-color:#77d42a;
+	border-radius:27px;
+	border:1px solid #268a16;
+	//display:inline-block;
+	cursor:pointer;
+	color:#306108;
+	//font-family:Arial;
+	//font-size:28px;
+	//font-weight:bold;
+	//padding:32px 40px;
+	text-decoration:none;
+}
+.magBtn:hover {
+	background:linear-gradient(to bottom, #5cb811 5%, #77d42a 100%);
+	background-color:#5cb811;
+}
+.magBtn:active {
+	position:relative;
+	top:1px;
 }
 
 .magBtn:disabled{
-  color: white;
+  background-color: white;
 }
 
 #DetailView{
