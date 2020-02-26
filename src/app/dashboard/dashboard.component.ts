@@ -22,7 +22,8 @@ export class DashboardComponent implements OnInit {
 
 	/*#region PROPERTIES/CONSTANTS/VARIABLES ETC*/
 
-	numPixelsPerDataPoint = 10; //Arbitrary value used to set the width of the graph container/spacing of the readings, based on the screen size. 
+	defaultPixelsPerDataPoint = 10; //Arbitrary value used to set the width of the graph container/spacing of the readings, based on the screen size. 
+	tempPixelsPerDataPoint = this.defaultPixelsPerDataPoint; //Temp version of the above for changing chart width on the fly.
 
 	readingEvery; //This should be the same as the delay() value in the arduino sketch main loop, measured in seconds.
 	sensorCount = 3; //Should be four sensors once you have bought them all.
@@ -229,7 +230,7 @@ export class DashboardComponent implements OnInit {
 
 	ngOnInit(){
 		this.getArduinoReading();
-		this.startTimer() //Start the timer function that informs the user hwhen the next reading will be.
+		this.startTimer() //Start the timer function that informs the user when the next reading will be.
 	}
 
 	ngAfterViewInit() {
@@ -630,10 +631,41 @@ export class DashboardComponent implements OnInit {
 
 	chartZoomIn(){
 		console.log('chart zoomed in!');
+		this.tempPixelsPerDataPoint++;
+		var newChartWidth = this.calcNewChartWidth();
+		this.myChart.canvas.parentNode.style.width = newChartWidth;
+		//console.log(`New Chart Width: ${newChartWidth}`);
 	}
 
 	chartZoomOut(){
 		console.log('chart zoomed out!');
+		this.tempPixelsPerDataPoint--;
+		var newChartWidth = this.calcNewChartWidth();
+		this.myChart.canvas.parentNode.style.width = newChartWidth;
+		//console.log(`New Chart Width: ${newChartWidth}`);
+	}
+
+	calcNewChartWidth(): string{
+		var newWidth = '';
+		var dataArrayLength = this.myChart.data.datasets[0].data.length;
+		//console.log(`dataArrayLength is ${dataArrayLength}`);
+		if (dataArrayLength >= this.tempPixelsPerDataPoint && ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width())) {
+			newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
+			$('.magBtn').css('disabled','false');
+			console.log('Negative Mag button enabled!');
+
+		}else{
+			newWidth = '100%';
+			$('.magBtn').css('disabled','true');
+			this.tempPixelsPerDataPoint++; //Smallest width reached so don't decrement any further.
+			console.log('Negative Mag button disabled!');
+			
+			//Equalise chart heights to prevent the axis title overlapping incorrectly.
+			var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+			axisChart.canvas.height = this.myChart.canvas.height; 
+		}
+		console.log(`newWidth is ${newWidth}`);
+		return newWidth;
 	}
 
 
@@ -745,13 +777,11 @@ export class DashboardComponent implements OnInit {
 	}
 
 	setChartAreaWidth(yAxisData){
-
-		if (yAxisData.length >= 50 && ((yAxisData.length * this.numPixelsPerDataPoint) >= $(window).height())) {
-			$('.chartAreaWrapper2').css('width', `${yAxisData.length * this.numPixelsPerDataPoint}px`);
+		if (yAxisData.length >= this.tempPixelsPerDataPoint && ((yAxisData.length * this.tempPixelsPerDataPoint) >= $(window).width())) {
+			$('.chartAreaWrapper2').css('width', `${yAxisData.length * this.tempPixelsPerDataPoint}px`);
 		}else{
 			$('.chartAreaWrapper2').css('width', '100%');
 		}
-
 	}
 
 	reformatXAxisData(xAxisDataArray){

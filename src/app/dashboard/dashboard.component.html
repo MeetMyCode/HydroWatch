@@ -67,13 +67,10 @@
 </div>
 
 <!--OVERLAY SHOWING PARAMETER DETAILS - GRAPHS/STATS-->
-<div id="mask">
+<div id="mask"> 
 	<div id="DetailView">
-		<div class="mt-2 d-flex justify-content-end" id="CloseButtonContainer">
-			<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
-		</div>
 
-		<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center btnGroup mt-2" data-toggle="buttons">
+		<div class="mt-2 w-100 p-0 btn-group-toggle d-flex justify-content-center btnGroup" data-toggle="buttons">
 			<label class="btn btn-secondary chartButton active" id="phButtonLabel">
 				<input type="radio" name="options" class="tableButton" id="phButton" autocomplete="off" (click)="chartButtonClicked($event)"> pH
 			</label>
@@ -89,6 +86,10 @@
 			<label class="btn btn-secondary chartButton" id="tempButtonLabel">
 				<input type="radio" name="options" class="tableButton" id="tempButton" autocomplete="off" (click)="chartButtonClicked($event)"> Temp
 			</label>
+		</div>
+
+		<div class="mt-2 d-flex justify-content-end" id="CloseButtonContainer">
+			<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
 		</div>
 
 		<div id="filterWrapper" class="d-flex justify-content-end">
