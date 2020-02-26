@@ -94,8 +94,8 @@
 
 		<div id="filterWrapper" class="d-flex justify-content-end">
 			<div class="magBtnWrapper d-flex h-100">
-				<button class="magBtn btn" (click)="chartZoomOut()"><fa-icon class="fa-lg" [icon]="magMinusIcon"></fa-icon></button>
-				<button class="magBtn btn" (click)="chartZoomIn()"><fa-icon class="fa-lg" [icon]="magPlusIcon"></fa-icon></button>				
+				<button class="magBtn" id="magMinusBtn" (click)="chartZoomOut()"><fa-icon class="fa-lg" [icon]="magMinusIcon"></fa-icon></button>
+				<button class="magBtn" id="magPlusBtn" (click)="chartZoomIn()"><fa-icon class="fa-lg" [icon]="magPlusIcon"></fa-icon></button>				
 			</div>
 		</div>
 

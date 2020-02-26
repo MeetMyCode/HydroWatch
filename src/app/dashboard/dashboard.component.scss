@@ -125,6 +125,10 @@ body, html{
   margin-right: 10px;
 }
 
+.magBtn:disabled{
+  color: white;
+}
+
 #DetailView{
   display: none;
   background-image: url("../../assets/Images/bgMain.jpg");
@@ -169,10 +173,9 @@ body, html{
 #CloseButtonContainer{
   position: absolute;
   top: 0;
-  left: 0;
+  right: 0;
   padding: 0;
   z-index: 1000;
-  width: 100%;
   margin-top: 5px;
 }
 

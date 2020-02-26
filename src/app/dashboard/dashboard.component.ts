@@ -230,7 +230,6 @@ export class DashboardComponent implements OnInit {
 
 	ngOnInit(){
 		this.getArduinoReading();
-		this.startTimer() //Start the timer function that informs the user when the next reading will be.
 	}
 
 	ngAfterViewInit() {
@@ -297,8 +296,14 @@ export class DashboardComponent implements OnInit {
 			//Sensor reading values for y-axis.
 			yAxisData = dataArray[1];	
 
-			this.setChartAreaWidth(yAxisData);
+			//Disable the mag buttons the number of readings is too low.
+			if (yAxisData.length < this.defaultPixelsPerDataPoint) {
+				$('.magBtn').css('disabled','true');
+			}else{
+				$('.magBtn').css('disabled','false');
+			}
 
+			this.setChartAreaWidth(yAxisData);
 
 			switch (this.selectedChart){			
 				//temp
@@ -345,7 +350,7 @@ export class DashboardComponent implements OnInit {
 			var rectangleSet = false;
 			var chartData = {
 				//labels: this.generateLabels(),
-				labels: this.generateLabels(),
+				labels: arrayOfDates,
 				datasets: [{
 					labels: dataSetLabel,
 					//labels: dataSetLabel,
@@ -370,27 +375,31 @@ export class DashboardComponent implements OnInit {
 						scaleLabel: {
 							display: true,
 							labelString: xAxisTitle,
-							fontSize: 20,							
+							fontSize: 20,	
+							fontColor: 'black'						
 						},
 						ticks: {
 							beginAtZero: true,
 							min: 0,
 							fontSize: 12,
 							display: true,
+							fontColor: 'black'
 						}
 					}],
 					yAxes: [{
 						scaleLabel: {
 							display: true,
 							labelString: yAxisTitle,
-							fontSize: 20,							
+							fontSize: 20,	
+							fontColor: 'black'						
 						},
 						ticks: {
 							display: true,
 							min: 0,
 							max: parseInt(this.chartMaxValues[this.selectedChart]),
 							fontSize: 12,
-							beginAtZero: true
+							beginAtZero: true,
+							fontColor: 'black'
 						}
 					}]
 				},
@@ -634,7 +643,7 @@ export class DashboardComponent implements OnInit {
 		this.tempPixelsPerDataPoint++;
 		var newChartWidth = this.calcNewChartWidth();
 		this.myChart.canvas.parentNode.style.width = newChartWidth;
-		//console.log(`New Chart Width: ${newChartWidth}`);
+		//console.log(`New Chart Width: ${newChartWidth}`);	
 	}
 
 	chartZoomOut(){
@@ -651,20 +660,21 @@ export class DashboardComponent implements OnInit {
 		//console.log(`dataArrayLength is ${dataArrayLength}`);
 		if (dataArrayLength >= this.tempPixelsPerDataPoint && ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width())) {
 			newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
-			$('.magBtn').css('disabled','false');
+			$('#magMinusBtn').css('disabled','false');
 			console.log('Negative Mag button enabled!');
 
 		}else{
 			newWidth = '100%';
-			$('.magBtn').css('disabled','true');
+			$('#magMinusBtn').css('disabled','true');
 			this.tempPixelsPerDataPoint++; //Smallest width reached so don't decrement any further.
 			console.log('Negative Mag button disabled!');
 			
 			//Equalise chart heights to prevent the axis title overlapping incorrectly.
 			var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
-			axisChart.canvas.height = this.myChart.canvas.height; 
+			axisChart.canvas.height = this.myChart.canvas.height; 				
 		}
 		console.log(`newWidth is ${newWidth}`);
+		console.log(`tempPixelsPerDataPoint is ${this.tempPixelsPerDataPoint}`);
 		return newWidth;
 	}
 
