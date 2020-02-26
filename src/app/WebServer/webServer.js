@@ -1,4 +1,5 @@
-//import { Observable, of, from, observable } from 'rxjs';
+/*#region CONSTANTS/PROPERTIES/VARIABLES ETC*/
+
 const SerialPort = require('serialport')
 const mysql = require('mysql');
 const WebSocket = require('ws');
@@ -26,8 +27,35 @@ var dbConnectionPool = mysql.createPool({
   database : 'sys'
 });
 
+/*#endregion*/
+
 //CREATE THE WEBSERVER
 createServer(); 
+
+//CREATE WEBSOCKET AND SERIALPORT CONNECTIONS/LISTENERS
+const wss = new WebSocket.Server({ 
+  port: 12345
+});
+
+//CREATE SERIALPORT CONNECTION
+var port = new SerialPort('/dev/tty.usbmodem14201', {
+  baudRate: 9600,
+});
+ 
+//WEB SOCKET EVENT LISTENER
+wss.on('connection', function connection(serverSocket) {
+
+  // IF THE SERVER GETS A MESSAGE FROM THE CLIENT..
+  serverSocket.on('message', function incoming(queryString) {
+  });
+
+  process.stdout.write('\nConnected to Socket!');
+
+  //GET READINGS FROM ARDUINO & PASS THEM TO DATABASE AND WEB PAGE
+  getSensorReadings(serverSocket);
+
+});
+
 
 function createServer(){
   http.createServer(async function (req, res) {
@@ -149,9 +177,6 @@ function createServer(){
   }).listen(webServerPort);  
 }
 
-
-//END OF WEBSERVER CODE
-
 function getDataFrom(table) {
 
     return new Promise((resolve, reject) => {
@@ -198,30 +223,6 @@ function getDataFrom(table) {
 
 }
 
-//CREATE WEBSOCKET AND SERIALPORT CONNECTIONS/LISTENERS
-const wss = new WebSocket.Server({ 
-  port: 12345
-});
-
-var port = new SerialPort('/dev/tty.usbmodem14201', {
-  baudRate: 9600,
-});
- 
-wss.on('connection', function connection(serverSocket) {
-
-  // IF THE SERVER GETS A MESSAGE FROM THE CLIENT..
-  serverSocket.on('message', function incoming(queryString) {
-  });
-
-  process.stdout.write('\nConnected to Socket!');
-
-  //GET READINGS FROM ARDUINO & PASS THEM TO DATABASE AND WEB PAGE
-  getSensorReadings(serverSocket);
-
-});
-
-//END OF WEB SOCKET AND SERIALPORT CONNECTION CREATION CODE
-
 function getSensorReadings(socket){
 
   /*
@@ -258,14 +259,16 @@ function getSensorReadings(socket){
         
         //FILTER DATA BEFORE SENDING TO DATABASE
         filterPrefixFromArduinoReading(data, poolConnection);
+
+        //SEND DATA TO WEB DASHBOARD
+        socket.send(data);
       }
     });
-
-    //SEND DATA TO WEB DASHBOARD
-    socket.send(data);
   });
 
 }
+
+/*#region METHODS */
   
 function filterPrefixFromArduinoReading(dataFromArduino, poolConnection){
 
@@ -343,3 +346,5 @@ function formatSIODateTimeToSQLDateTime(stringToFormat){
 
   return dateTimeString;
 }
+
+/*#endregion*/

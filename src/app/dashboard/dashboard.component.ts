@@ -2,8 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
+import { faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
+
 var Chart = require('chart.js');
 
+const maxTemp: string = '40';
+const maxPh:string = '14';
+const maxEc:string = '4';
+const maxOrp:string = '600';
 
 
 @Component({
@@ -16,11 +22,12 @@ export class DashboardComponent implements OnInit {
 
 	/*#region PROPERTIES/CONSTANTS/VARIABLES ETC*/
 
-	numPixelsPerDataPoint = 10; //used to set the width of the graph container, based on the screen size.
+	numPixelsPerDataPoint = 10; //Arbitrary value used to set the width of the graph container/spacing of the readings, based on the screen size. 
 
-	readingEvery = 5; //This should be the same as the delay() value in the arduino sketch main loop, measured in seconds.
+	readingEvery; //This should be the same as the delay() value in the arduino sketch main loop, measured in seconds.
 	sensorCount = 3; //Should be four sensors once you have bought them all.
-	timeTillReading = 5; //this is the reading bound to the webpage interface that informs the user when the next reading will occur.
+	timeTillReading; //this is the reading bound to the webpage interface that informs the user when the next reading will occur.
+	readingCounter = 0; //Increments by 1 every time a reading is received. When the same as sensorCount, reset timeTillReading.
 
 	selectedChart: number = 0;
 	arduinoReading: string; //this is the reaading received from the mcu, formatted as prefix (specifies which sensor) + reading.
@@ -33,18 +40,14 @@ export class DashboardComponent implements OnInit {
 
 	//ARDUINO READING PROPERTIES
 	currentTemp: string = "22.65";
-	maxTemp: string = '40';
 	currentPh: string = "6.54"
-	maxPh:string = '14';
 	currentEc: string = "1.6";
-	maxEc:string = '4';
 	currentOrp: string = "300";
-	maxOrp:string = '600';
 
 	myChart = null;
 	resizeCount: number;
 	charts = ["temperature", "ph", "ec","orp"];
-	chartMaxValues = {0:this.maxTemp, 1:this.maxPh, 2:this.maxEc, 3:this.maxOrp};
+	chartMaxValues = {0:maxTemp, 1:maxPh, 2:maxEc, 3:maxOrp};
 
   
 	TempOptions = {
@@ -213,6 +216,15 @@ export class DashboardComponent implements OnInit {
 
 	/*#endregion*/
 
+	/*#region FONT AWESOME ICONS */
+	magPlusIcon = faSearchPlus;
+	magMinusIcon = faSearchMinus;
+
+
+	/*#endregion*/
+
+	
+	
 	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {	}
 
 	ngOnInit(){
@@ -349,7 +361,7 @@ export class DashboardComponent implements OnInit {
 					enabled: true
 				},
 				legend: {
-					display: true
+					display: false
 				},
 				scales: {
 					xAxes: [{
@@ -540,7 +552,7 @@ export class DashboardComponent implements OnInit {
 
 	}
 
-		getArduinoReading(){
+	getArduinoReading(){
 
 		this.myWebSocketService.getSocket().subscribe(
 			(dataFromServer) => {
@@ -550,20 +562,21 @@ export class DashboardComponent implements OnInit {
 				var prefix = dataFromServer[0].toLowerCase();
 				//console.log("reading prefix is: " + prefix);
 
-				//Update the countdown value on the dashboard every time data from server is received.
-				if (this.timeTillReading <= 0) {
-					this.timeTillReading = 5;
-				}else{
-					this.timeTillReading = Math.floor(this.timeTillReading - (this.readingEvery/this.sensorCount)); //4 readings (1 per sensor) every send, so knock off 0.25 for each reading.
-				}
-
 				switch (prefix) {
+					//This is the first serial data to be received from the setup function in the Arduino sketch
+					//that serves to auto-update the timer for informing the user when the next reading will be.
+					//Timer interval value is received as a string in milliseconds so /1000 to convert to seconds.
+					case '0':
+						this.readingEvery = parseInt(dataFromServer.substring(1, ))/1000;
+						this.startTimer();
+						break;
+
 					case "t":
 						var temp = dataFromServer.substring(1, );
 						//$('#TempValue').text(temp);
 						this.TempGauge.set(temp);
 						this.currentTemp = temp;
-
+						this.readingCounter++;
 						break;
 
 					case "p":
@@ -571,6 +584,7 @@ export class DashboardComponent implements OnInit {
 						//$('#PhValue').text(ph);
 						this.PhGauge.set(ph);
 						this.currentPh = ph;
+						this.readingCounter++;
 						break;
 
 					case "e":
@@ -579,6 +593,7 @@ export class DashboardComponent implements OnInit {
 						//$('#EcTdsValue').text(ec);
 						this.EcGauge.set(ec);
 						this.currentEc = ec;
+						this.readingCounter++;
 						break;
 
 					case "o":
@@ -586,11 +601,16 @@ export class DashboardComponent implements OnInit {
 						//$('#OrpValue').text(orp);
 						this.OrpGauge.set(orp);
 						this.currentOrp = orp;
+						this.readingCounter++;
 						break;	
 
 					default:
-						console.log('Error - Unknown');
+						console.log('Error - Unknown prefix in getArduinoReading() received.');
 						break;
+				}
+
+				if (this.readingCounter >= this.sensorCount) {
+					this.resetReadingCounter();
 				}
 			},
 			error => {
@@ -605,6 +625,19 @@ export class DashboardComponent implements OnInit {
 	}
 
 	/*#endregion*/
+
+	/*#region CHART SPECIFIC METHODS*/
+
+	chartZoomIn(){
+		console.log('chart zoomed in!');
+	}
+
+	chartZoomOut(){
+		console.log('chart zoomed out!');
+	}
+
+
+	/*#endregion */
 
 
 	/*#region METHODS - DUMMY DATA GENERATION FOR CHART*/
@@ -653,7 +686,7 @@ export class DashboardComponent implements OnInit {
 		ctx.canvas.height = innerHeight;
 
 		this.TempGauge = new Gauge(TempCanvas).setOptions(this.TempOptions); // create sexy gauge!
-		this.TempGauge.maxValue = this.maxTemp; // set max gauge value
+		this.TempGauge.maxValue = maxTemp; // set max gauge value
 		this.TempGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
 		this.TempGauge.animationSpeed = 1; // set animation speed (32 is default value)
 		this.TempGauge.set(22); // set actual value
@@ -668,7 +701,7 @@ export class DashboardComponent implements OnInit {
 		ctx.canvas.height = innerHeight;
 
 		this.PhGauge = new Gauge(PhCanvas).setOptions(this.PhOptions); // create sexy gauge!
-		this.PhGauge.maxValue = this.maxPh; // set max gauge value
+		this.PhGauge.maxValue = maxPh; // set max gauge value
 		this.PhGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
 		this.PhGauge.animationSpeed = 1; // set animation speed (32 is default value)
 		this.PhGauge.set(6.5); // set actual value
@@ -683,7 +716,7 @@ export class DashboardComponent implements OnInit {
 		ctx.canvas.height = innerHeight;
 
 		this.EcGauge = new Gauge(EcCanvas).setOptions(this.EcOptions); // create sexy gauge!
-		this.EcGauge.maxValue = this.maxEc; // set max gauge value
+		this.EcGauge.maxValue = maxEc; // set max gauge value
 		this.EcGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
 		this.EcGauge.animationSpeed = 1; // set animation speed (32 is default value)
 		this.EcGauge.set(1.6); // set actual value
@@ -696,7 +729,7 @@ export class DashboardComponent implements OnInit {
 		ctx.canvas.height = innerHeight;
 
 		this.OrpGauge = new Gauge(OrpCanvas).setOptions(this.OrpOptions); // create sexy gauge!
-		this.OrpGauge.maxValue = this.maxOrp; // set max gauge value
+		this.OrpGauge.maxValue = maxOrp; // set max gauge value
 		this.OrpGauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
 		this.OrpGauge.animationSpeed = 1; // set animation speed (32 is default value)
 		this.OrpGauge.set(300); // set actual value
@@ -706,6 +739,10 @@ export class DashboardComponent implements OnInit {
 
 	
 	/*#region UTILITY METHODS*/
+
+	resetReadingCounter(){
+		this.timeTillReading = this.readingEvery;
+	}
 
 	setChartAreaWidth(yAxisData){
 
@@ -749,13 +786,20 @@ export class DashboardComponent implements OnInit {
 	}
 	
 	startTimer(){
-		setInterval(()=>{
-			if (this.timeTillReading <= 0) {
-				this.timeTillReading = this.readingEvery;
-			} else {
-				this.timeTillReading -= 1;
-			}
-		},1000)
+
+		if (this.readingEvery >= 0) {
+			this.timeTillReading = this.readingEvery
+			setInterval(()=>{
+				if (this.timeTillReading <= 0) {
+					this.timeTillReading = this.readingEvery;
+				} else {
+					this.timeTillReading -= 1;
+				}
+			}, 1000);
+		}else{
+			//Error condition - this.readingEvery has not been set yet!!
+			console.log('startTimer() called but timeTillReading not yet initialised with a value or has a negative value!');			
+		}
 	}
 
 	CloseOverlay(){

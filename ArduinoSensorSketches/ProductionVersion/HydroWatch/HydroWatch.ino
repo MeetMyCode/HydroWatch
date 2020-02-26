@@ -37,13 +37,23 @@ int outputValue = 0; //VALUE OUTPUT TO THE PWM (ANALOG OUT)
 int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
 int pHArrayIndex=0;
 
+//********************************SETUP CONSTANTS/PROPERTIES********************************
+
+
+int readingInterval = 5000; //Value in milliseconds
+String readingIntervalPrefix = "0";
+
 
 //********************************END OF CONSTANTS/PROPERTIES SECTION********************************
 
 
 void setup() {
+  
   // INITIALISE SERIAL COMMUNICATIONS AT 9600 BPS.
   Serial.begin(9600);
+
+  //SEND THE READING INTERVAL VALUE TO THE WEBPAGE FOR UPDATING THE this.readEvery PROPERTY THAT INFORMS THE USER WHEN THE NEXT READING WILL BE.
+  Serial.print(readingIntervalPrefix + String(readingInterval) + "\r\n");
 
   // TEMPERATURE - Start up the library
   sensors.begin();
@@ -61,8 +71,11 @@ void loop() {
   //PH CODE
   GetPhReading();
 
+  //ORP CODE
+  //GetOrpReading();
 
-  delay(1000);
+
+  delay(readingInterval);
 }
 
 void GetPhReading(){
@@ -107,7 +120,11 @@ void GetEcReading(){
   //delay(1000);
 }
 
+void GetOrpReading(){
 
+  //ORP SENSOR CODE GOES HERE.
+  
+}
 
 void GetTemperature(){
 

@@ -73,7 +73,7 @@
 			<button class="btn btn-sm btn-danger mr-2" id="CloseButton" (click)="CloseOverlay()">X</button>
 		</div>
 
-		<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center" data-toggle="buttons">
+		<div class="m-0 p-0 btn-group-toggle d-flex justify-content-center btnGroup mt-2" data-toggle="buttons">
 			<label class="btn btn-secondary chartButton active" id="phButtonLabel">
 				<input type="radio" name="options" class="tableButton" id="phButton" autocomplete="off" (click)="chartButtonClicked($event)"> pH
 			</label>
@@ -89,6 +89,13 @@
 			<label class="btn btn-secondary chartButton" id="tempButtonLabel">
 				<input type="radio" name="options" class="tableButton" id="tempButton" autocomplete="off" (click)="chartButtonClicked($event)"> Temp
 			</label>
+		</div>
+
+		<div id="filterWrapper" class="d-flex justify-content-end">
+			<div class="magBtnWrapper d-flex h-100">
+				<button class="magBtn btn" (click)="chartZoomOut()"><fa-icon class="fa-lg" [icon]="magMinusIcon"></fa-icon></button>
+				<button class="magBtn btn" (click)="chartZoomIn()"><fa-icon class="fa-lg" [icon]="magPlusIcon"></fa-icon></button>				
+			</div>
 		</div>
 
 		<div class="chartWrapper">
