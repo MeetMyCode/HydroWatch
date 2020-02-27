@@ -1,5 +1,6 @@
 //SASS VARIABLES
 $chartSelectorButton: #0275d8;
+$overLayBtnColor: #77d42a;
 
 /*#region TAG SPECIFIC CSS*/
 
@@ -108,15 +109,16 @@ body, html{
 /*#region OVERLAY CSS*/
 
 #filterWrapper{
-  //width: 100%;
+  width: 90%;
   height: 40px;
-  //margin-top: 40px;
+  margin: auto;
   //background-color: grey;
 }
 
 .magBtnWrapper{
-  margin-right: 80px;
+  //margin-right: 80px;
   height: 100%;
+  //background-color: white;
 }
 
 .magBtn {
@@ -126,7 +128,7 @@ body, html{
 
 	box-shadow:inset 0px -3px 0px 0px #caefab;
 	background:linear-gradient(to bottom, #77d42a 5%, #5cb811 100%);
-	background-color:#77d42a;
+	background-color: $overLayBtnColor;
 	border-radius:27px;
 	border:1px solid #268a16;
 	//display:inline-block;
@@ -151,6 +153,14 @@ body, html{
   background: grey;
   cursor: not-allowed;
 }
+
+.datePickerWrapper{
+  height: 100%;
+  //width: 80%;
+  margin-left: 5%;
+  //background-color: white;
+}
+
 
 #DetailView{
   display: none;
