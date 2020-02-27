@@ -148,7 +148,8 @@ body, html{
 }
 
 .magBtn:disabled{
-  background-color: white;
+  background: grey;
+  cursor: not-allowed;
 }
 
 #DetailView{
