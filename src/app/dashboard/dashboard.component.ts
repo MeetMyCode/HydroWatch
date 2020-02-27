@@ -288,9 +288,9 @@ export class DashboardComponent implements OnInit {
 
 			//console.log('graphFromDb is: ' + dataArray.toString());
 
-			//Time labels or x-axis
+			//Time labels for x-axis
 			xAxisData = this.reformatXAxisData(dataArray[0]);
-			var arrayOfDates = xAxisData[0];
+			var arrayOfTimes = xAxisData[1];
 			//console.log('Start array of dates = ' + arrayOfDates);
 
 			//Sensor reading values for y-axis.
@@ -353,7 +353,7 @@ export class DashboardComponent implements OnInit {
 			var rectangleSet = false;
 			var chartData = {
 				//labels: this.generateLabels(),
-				labels: arrayOfDates,
+				labels: arrayOfTimes,
 				datasets: [{
 					labels: dataSetLabel,
 					//labels: dataSetLabel,
@@ -647,6 +647,10 @@ export class DashboardComponent implements OnInit {
 		var newChartWidth = this.calcNewChartWidth();
 		this.myChart.canvas.parentNode.style.width = newChartWidth;
 		//console.log(`New Chart Width: ${newChartWidth}`);	
+
+		//Equalise chart heights to prevent the axis title overlapping incorrectly.
+		var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+		axisChart.canvas.height = this.myChart.canvas.height; 	
 	}
 
 	chartZoomOut(){
@@ -655,6 +659,10 @@ export class DashboardComponent implements OnInit {
 		var newChartWidth = this.calcNewChartWidth();
 		this.myChart.canvas.parentNode.style.width = newChartWidth;
 		//console.log(`New Chart Width: ${newChartWidth}`);
+
+		//Equalise chart heights to prevent the axis title overlapping incorrectly.
+		var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+		axisChart.canvas.height = this.myChart.canvas.height; 	
 	}
 
 	calcNewChartWidth(): string{
@@ -663,18 +671,15 @@ export class DashboardComponent implements OnInit {
 		//console.log(`dataArrayLength is ${dataArrayLength}`);
 		if (dataArrayLength >= this.tempPixelsPerDataPoint && ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width())) {
 			newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
-			//$('#magMinusBtn').css('disabled','false');
+			$('#magMinusBtn').prop('disabled',false);
 			console.log('Negative Mag button enabled!');
 
 		}else{
 			newWidth = '100%';
-			//$('#magMinusBtn').css('disabled','true');
+			$('#magMinusBtn').prop('disabled',true);
 			this.tempPixelsPerDataPoint++; //Smallest width reached so don't decrement any further.
 			console.log('Negative Mag button disabled!');
-			
-			//Equalise chart heights to prevent the axis title overlapping incorrectly.
-			var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
-			axisChart.canvas.height = this.myChart.canvas.height; 				
+						
 		}
 		console.log(`newWidth is ${newWidth}`);
 		console.log(`tempPixelsPerDataPoint is ${this.tempPixelsPerDataPoint}`);
@@ -808,7 +813,7 @@ export class DashboardComponent implements OnInit {
 			
 			//Split array of DateTime strings into seperate array containing a date and a time.
 			var dateAndTime = dateTimeElement.split(' ');
-			//console.log('dateAndTime is: ' + dateAndTime);
+			console.log('dateAndTime is: ' + dateAndTime);
 
 			//Reformat the dates from yyy-mm-dd to dd-mm-yyyy
 			var dateParts = dateAndTime[0].split('-');
