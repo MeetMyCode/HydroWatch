@@ -1,5 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { NgbDatepicker, NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
+import { GetChartDateService } from '../get-chart-date-service.service'
+
+export var datePickerDate: string = "21-02-2020"; //Export this as it is used in the GetChartDateService.
 
 @Component({
   selector: 'app-date-picker',
@@ -8,9 +11,8 @@ import { NgbDatepicker, NgbInputDatepicker } from '@ng-bootstrap/ng-bootstrap';
 })
 export class DatePickerComponent implements OnInit {
 
-  constructor() { }
+  constructor(private chartDateService: GetChartDateService) { }
 
-  @ViewChild('datePicker') datePicker;
 
   ngOnInit(): void {
   }
@@ -22,8 +24,13 @@ export class DatePickerComponent implements OnInit {
     var day = splitStringArray[2];
     var month = splitStringArray[1];
     var year = splitStringArray[0];
-    var newDateString = `${day}/${month}/${year}`;
+    var newDateString = `${day}-${month}-${year}`;
     $('#dateSelector').val(newDateString);
+  }
+
+  getDatePickerDate(){
+
+    return datePickerDate;
   }
 
 

@@ -60,13 +60,19 @@ wss.on('connection', function connection(serverSocket) {
 function createServer(){
   http.createServer(async function (req, res) {
 
-    var url = req.url.substring(0,5);
-    var table = req.url.substring(5,);
-    console.log('\nreq.url prefix is: ' + url + ' and table is: ' + dbTables[table]);
+    var urlPrefix = req.url.substring(0,5);
+    var tableAndDateSections = req.url.substring(5,).split('/');
+    process.stdout.write(`\ntableAndDateSections is: ${tableAndDateSections}`);
 
-    if (url == "/api/") {
-      process.stdout.write('api address is: ' + req.url);
-      await getDataFrom(table).then((dbData)=>{
+    var table = tableAndDateSections[0];
+    var date = tableAndDateSections[1];
+    var datePickerDate = formatDateStringForMySql(date);
+    process.stdout.write('\nreq.url prefix is: ' + urlPrefix + ', table is: ' + dbTables[table] + ' and date is: ' + datePickerDate);
+
+    if (urlPrefix == "/api/") {
+
+      process.stdout.write('\napi address is: ' + req.url);
+      await getDataFrom(table, datePickerDate).then((dbData)=>{
         //process.stdout.write('\ndbData is: ' + dbData);
         res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
         var stringifyString = JSON.stringify(dbData);
@@ -74,7 +80,6 @@ function createServer(){
         process.stdout.write('\nhttp response data is: ' + dbData);
         res.end();
       });
-
 
     }else{
       var mimeType = path.extname(req.url);
@@ -170,23 +175,28 @@ function createServer(){
           process.stdout.write('Received an unrecognised request URL in http.createServer(): ' + req.url + 'END OF URL');
           break;
       }
+
     }
-
-
 
   }).listen(webServerPort);  
 }
 
-function getDataFrom(table) {
-
+function getDataFrom(table, date=null) {
+  
     return new Promise((resolve, reject) => {
       process.stdout.write('\nTrying to get data from table: ' + table);
 
       //a query string is received as the incoming message. Execute it against the database.
       var result = '';
       var finalResult = '';
-      var baseQueryString = 'SELECT * FROM ';
-      var queryString = baseQueryString + dbTables[table];
+      var baseQueryString = 'SELECT * FROM';
+      var queryString;
+
+      if (date == null) {
+        queryString = `${baseQueryString} ${dbTables[table]}`;
+      }else{
+        queryString = `${baseQueryString} ${dbTables[table]} WHERE date="${date}"`;
+      }
 
       process.stdout.write('\nQuery string is: ' + queryString);
       dbConnectionPool.getConnection((err, poolConnection) => {
@@ -221,6 +231,19 @@ function getDataFrom(table) {
 
     })
 
+}
+
+function formatDateStringForMySql(dateString){
+
+  console.log(`\ndateString in formatDateStringForMySql is ${dateString}`);
+  var formattedDatestring = '';
+  var tempString = dateString.split('-');
+  var day = tempString[0];
+  var month = tempString[1];
+  var year = tempString[2];
+
+  formattedDatestring = `${year}-${month}-${day}`;
+  return formattedDatestring;
 }
 
 function getSensorReadings(socket){

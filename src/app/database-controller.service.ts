@@ -15,21 +15,21 @@ export class DatabaseControllerService {
   	constructor(private myWebSocket: WebSocketService, private http: HttpClient) { }  
   
 	
-	async getData(table): Promise<any>{
+	async getData(table, date=null): Promise<any>{
 		/*
 		make a GET request to the webServer with the passed in query string.
 		Once the data has beeen received, extract the x and y data, as well as the max value for the y-data
 		and put this into the returned object.
 		*/
 
-		console.log("table passed to getData() is: " + table);
+		console.log(`\nTable passed to getData() is: ${table} and date is ${date}`);
 
 		var tableData: Observable<string>;
 		var tableDataObservable: Observable<string>;
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get('\n' + this.httpBaseAddress + '/api/' + table, {
+			tableData = this.http.get(`\n${this.httpBaseAddress}/api/${table}/${date}`, {
 				responseType: "text"
 			});
 

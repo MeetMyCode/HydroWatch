@@ -3,6 +3,7 @@ import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 import { faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
+import { GetChartDateService } from '../get-chart-date-service.service';
 
 var Chart = require('chart.js');
 
@@ -20,7 +21,7 @@ const maxOrp:string = '600';
 
 export class DashboardComponent implements OnInit {
 
-	/*#region PROPERTIES/CONSTANTS/VARIABLES ETC*/
+	/*#region PROPERTIES/VARIABLES ETC*/
 
 	defaultPixelsPerDataPoint = 10; //Arbitrary value used to set the width of the graph container/spacing of the readings, based on the screen size. 
 	tempPixelsPerDataPoint = this.defaultPixelsPerDataPoint; //Temp version of the above for changing chart width on the fly.
@@ -225,7 +226,10 @@ export class DashboardComponent implements OnInit {
 	/*#endregion*/
 
 	
-	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {	}
+	constructor(
+		private myWebSocketService: WebSocketService, 
+		private databaseService: DatabaseControllerService,
+		private chartDateService: GetChartDateService) {	}
 
 	ngOnInit(){
 		this.getArduinoReading();
@@ -466,8 +470,9 @@ export class DashboardComponent implements OnInit {
 		return await new Promise(async (resolve,reject)=>{
 
 			var dataArray = new Array();
+			var selectedDate = this.chartDateService.getDatePickerDate();
 
-			var dbResultObserver = await this.databaseService.getData(this.selectedChart);
+			var dbResultObserver = await this.databaseService.getData(this.selectedChart, selectedDate);
 			dbResultObserver.subscribe((data)=>{
 
 				//console.log('\nReturned data in getDatabaseData() is: ' + data);
