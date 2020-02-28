@@ -225,7 +225,6 @@ export class DashboardComponent implements OnInit {
 	/*#endregion*/
 
 	
-	
 	constructor(private myWebSocketService: WebSocketService, private databaseService: DatabaseControllerService) {	}
 
 	ngOnInit(){
@@ -238,8 +237,13 @@ export class DashboardComponent implements OnInit {
 
 	/*#region MAIN METHODS*/
 
+	//Change displayed chart from within the overlay.
 	async chartButtonClicked(event){
 		//alert("chartButtonClicked event fired!");
+
+		//reset when changing charts.
+		this.tempPixelsPerDataPoint = this.defaultPixelsPerDataPoint;
+
 		var eventTargetId = (<HTMLInputElement>event.target).id;
 		switch (eventTargetId) {
 			case 'tempButton':
@@ -289,22 +293,12 @@ export class DashboardComponent implements OnInit {
 			//console.log('graphFromDb is: ' + dataArray.toString());
 
 			//Time labels for x-axis
-			xAxisData = this.reformatXAxisData(dataArray[0]);
-			var arrayOfTimes = xAxisData[1];
-			//console.log('Start array of dates = ' + arrayOfDates);
+			xAxisData = dataArray[0];
+			//console.log('xAxisdata count is: ' + xAxisData.length);
 
 			//Sensor reading values for y-axis.
 			yAxisData = dataArray[1];	
-
-			//Disable the mag buttons the number of readings is too low.
-			if (yAxisData.length < this.defaultPixelsPerDataPoint) {
-				console.log(`y-axisdata length too small - ${yAxisData.length} - disabling now.`);
-				$('.magBtn').prop('disabled',true);
-
-			}else{
-				console.log(`y-axisdata length fine - ${yAxisData.length} - disabling cancelled.`);
-				$('.magBtn').prop('disabled',false);
-			}
+			//console.log('yAxisdata count is: ' + yAxisData.length);
 
 			this.setChartAreaWidth(yAxisData);
 
@@ -346,14 +340,10 @@ export class DashboardComponent implements OnInit {
 					break;
 			}
 
-			//test chart code start
-
-			console.log('yAxisdata count is: ' + yAxisData.length);
-			//console.log(`arrayOfDates is ${arrayOfDates}`);
 			var rectangleSet = false;
 			var chartData = {
 				//labels: this.generateLabels(),
-				labels: arrayOfTimes,
+				labels: xAxisData,
 				datasets: [{
 					labels: dataSetLabel,
 					//labels: dataSetLabel,
@@ -445,6 +435,11 @@ export class DashboardComponent implements OnInit {
 							var sourceCtx = myChart.chart.canvas.getContext('2d');
 							sourceCtx.clearRect(0, 0, copyWidth, copyHeight);
 						}
+					},
+					onResize: function(){
+						var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+						var targetCanvas = <HTMLCanvasElement>document.getElementById("axis-Test");
+						targetCanvas.height = sourceCanvas.height;
 					}
 				}
 			}	
@@ -459,12 +454,7 @@ export class DashboardComponent implements OnInit {
 				data: chartData,
 				options: chartOptions
 			});
-
 			this.myChart = myChart;
-
-			//this.addData(5, chartTest); 
-
-			//test chart code end
 
 		}); //returns data for x & y axes, as well as the max value for the y-axis data
 
@@ -497,12 +487,12 @@ export class DashboardComponent implements OnInit {
 					if (dbRowsAsJson.hasOwnProperty(row)) {
 						//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
 						//"1980-02-27 08:23:00" format.
-						var timeStamp :string = (dbRowsAsJson[row]['timestamp']).replace('T',' ').substring(0,19);
+						var time :string = (dbRowsAsJson[row]['time']);
 						var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
 						//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
 						//console.log('timeStamp is: ' + timeStamp);
 						//console.log('reading is: ' + reading);
-						xAxisData.push(timeStamp);
+						xAxisData.push(time);
 						yAxisData.push(reading);						
 					}
 				}
@@ -639,12 +629,16 @@ export class DashboardComponent implements OnInit {
 
 	/*#endregion*/
 
+
 	/*#region CHART SPECIFIC METHODS*/
 
-	chartZoomIn(){
+	chartZoomIn(event){
+		var buttonId = (<HTMLButtonElement>(event.target)).id;		
 		console.log('chart zoomed in!');
+		console.log(`original positive event target is: ${event.target}`);
+
 		this.tempPixelsPerDataPoint++;
-		var newChartWidth = this.calcNewChartWidth();
+		var newChartWidth = this.calcNewChartWidth(buttonId);
 		this.myChart.canvas.parentNode.style.width = newChartWidth;
 		//console.log(`New Chart Width: ${newChartWidth}`);	
 
@@ -653,10 +647,12 @@ export class DashboardComponent implements OnInit {
 		axisChart.canvas.height = this.myChart.canvas.height; 	
 	}
 
-	chartZoomOut(){
+	chartZoomOut(event){
+		var buttonId = (<HTMLButtonElement>(event.target)).id;		
 		console.log('chart zoomed out!');
+		console.log(`original negative event target is: ${event.target}`);
 		this.tempPixelsPerDataPoint--;
-		var newChartWidth = this.calcNewChartWidth();
+		var newChartWidth = this.calcNewChartWidth(buttonId);
 		this.myChart.canvas.parentNode.style.width = newChartWidth;
 		//console.log(`New Chart Width: ${newChartWidth}`);
 
@@ -665,22 +661,47 @@ export class DashboardComponent implements OnInit {
 		axisChart.canvas.height = this.myChart.canvas.height; 	
 	}
 
-	calcNewChartWidth(): string{
+	calcNewChartWidth(buttonId): string{
+		console.log(`In calcNewChartWidth(), buttonId is ${buttonId.toString()}`);
 		var newWidth = '';
 		var dataArrayLength = this.myChart.data.datasets[0].data.length;
-		//console.log(`dataArrayLength is ${dataArrayLength}`);
-		if (dataArrayLength >= this.tempPixelsPerDataPoint && ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width())) {
-			newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
-			$('#magMinusBtn').prop('disabled',false);
-			console.log('Negative Mag button enabled!');
 
-		}else{
-			newWidth = '100%';
-			$('#magMinusBtn').prop('disabled',true);
-			this.tempPixelsPerDataPoint++; //Smallest width reached so don't decrement any further.
-			console.log('Negative Mag button disabled!');
-						
+		switch (buttonId) {
+			case 'magPlusBtn':
+				if ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width()) {
+					newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
+					$('#magMinusBtn').prop('disabled',false);
+
+				} else {					
+					//If dataArrayLength is too small, tempPixelsPerDataPoint might still be too small too 
+					//result in a px value greater than that of chartAreaWrapper, so compute a new value
+					//for tempPixelsPerDataPoint.
+					var requiredPixelsPerDataPoint = ($(window).width() / dataArrayLength) + 1;
+
+					if (this.tempPixelsPerDataPoint < requiredPixelsPerDataPoint) {
+						this.tempPixelsPerDataPoint = requiredPixelsPerDataPoint;
+						newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
+					} else {
+						newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
+					}
+					$('#magMinusBtn').prop('disabled',false);
+
+				}
+				break;
+
+			case 'magMinusBtn':
+				if ((dataArrayLength * this.tempPixelsPerDataPoint) >= $(window).width()) {
+					newWidth = `${dataArrayLength * this.tempPixelsPerDataPoint}px`;
+				} else {
+					newWidth = '100%';
+					$('#magMinusBtn').prop('disabled',true);		
+				}
+				break;	
+
+			default:
+				break;
 		}
+
 		console.log(`newWidth is ${newWidth}`);
 		console.log(`tempPixelsPerDataPoint is ${this.tempPixelsPerDataPoint}`);
 		return newWidth;
@@ -797,40 +818,11 @@ export class DashboardComponent implements OnInit {
 	setChartAreaWidth(yAxisData){
 		if (yAxisData.length >= this.tempPixelsPerDataPoint && ((yAxisData.length * this.tempPixelsPerDataPoint) >= $(window).width())) {
 			$('.chartAreaWrapper2').css('width', `${yAxisData.length * this.tempPixelsPerDataPoint}px`);
+			$('#magMinusBtn').prop('disabled', false);
 		}else{
 			$('.chartAreaWrapper2').css('width', '100%');
+			$('#magMinusBtn').prop('disabled', true);
 		}
-	}
-
-	reformatXAxisData(xAxisDataArray){
-
-		var arrayOfDates = new Array();
-		var arrayOfTimes = new Array();
-
-		xAxisDataArray.forEach(dateTimeElement => {
-
-			//console.log('dateTimeElement array is: '+ dateTimeElement);
-			
-			//Split array of DateTime strings into seperate array containing a date and a time.
-			var dateAndTime = dateTimeElement.split(' ');
-			console.log('dateAndTime is: ' + dateAndTime);
-
-			//Reformat the dates from yyy-mm-dd to dd-mm-yyyy
-			var dateParts = dateAndTime[0].split('-');
-			var year = dateParts[0];
-			var mon = dateParts[1];
-			var day = dateParts[2];
-			var stringToAdd = `${day}-${mon}-${year}`;
-
-			//push to arrays for return values.
-			arrayOfDates.push(stringToAdd);
-			arrayOfTimes.push(dateAndTime[1]);
-		});
-
-		//console.log('Formatted dateArray: ' + arrayOfDates);
-		//console.log('Formatted timeArray: ' + arrayOfTimes);
-
-		return [arrayOfDates,arrayOfTimes]
 	}
 	
 	startTimer(){
@@ -861,7 +853,7 @@ export class DashboardComponent implements OnInit {
 
 	mousedown(event: Event){
 
-		var id = (<HTMLDivElement>(event.target)).id;
+		var id = (<HTMLDivElement>event.target).id;
 
 		switch(id){
 			case "TempValue":
@@ -921,7 +913,7 @@ export class DashboardComponent implements OnInit {
 
 	mouseup(event: Event){
 
-		var id = (<HTMLDivElement>(event.target)).id;
+		var id = (<HTMLDivElement>event.target).id;
 
 		switch(id){
 			case "TempValue":

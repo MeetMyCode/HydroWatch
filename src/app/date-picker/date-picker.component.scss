@@ -3,7 +3,7 @@ $overLayBtnColor: #77d42a;
 
 .datePicker {
     height: 100%;
-    //width: 50px;
+    //width: 200%;
     //margin-left: 100px;
   
     box-shadow:inset 0px -3px 0px 0px #caefab;
@@ -28,3 +28,18 @@ $overLayBtnColor: #77d42a;
     position:relative;
     top:1px;
 }
+
+.ngb-dp-day {
+    width: 4rem !important;
+    height: 4rem !important;
+  }
+  
+  .ngb-dp-day > div {
+    width: 4rem !important;
+    height: 4rem !important;
+    line-height: 4rem !important;
+  }
+  
+  .ngb-dp-weekday {
+    width: 4rem !important;
+  }

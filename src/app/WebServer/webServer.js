@@ -71,7 +71,7 @@ function createServer(){
         res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
         var stringifyString = JSON.stringify(dbData);
         res.write(stringifyString);
-        //process.stdout.write('\nhttp response data is: ' + dbData);
+        process.stdout.write('\nhttp response data is: ' + dbData);
         res.end();
       });
 

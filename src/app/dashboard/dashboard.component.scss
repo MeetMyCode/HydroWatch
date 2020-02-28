@@ -121,6 +121,11 @@ body, html{
   //background-color: white;
 }
 
+fa-icon{
+  pointer-events: none; //leave this set to none, otherwise the icon svg interferes with the magBtn click events.
+  //background-color: white;
+}
+
 .magBtn {
   height: 100%;
   width: 50px;
@@ -132,7 +137,7 @@ body, html{
 	border-radius:27px;
 	border:1px solid #268a16;
 	//display:inline-block;
-	cursor:pointer;
+  //cursor:pointer;
 	color:#306108;
 	//font-family:Arial;
 	//font-size:28px;
