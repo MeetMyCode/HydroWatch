@@ -3,7 +3,8 @@ import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 import { faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
-import { GetChartDateService } from '../get-chart-date-service.service';
+import { GetDatePickerService } from '../get-chart-date-service.service';
+
 
 var Chart = require('chart.js');
 
@@ -229,14 +230,22 @@ export class DashboardComponent implements OnInit {
 	constructor(
 		private myWebSocketService: WebSocketService, 
 		private databaseService: DatabaseControllerService,
-		private chartDateService: GetChartDateService) {	}
+		private datePickerService: GetDatePickerService) {	}
 
 	ngOnInit(){
 		this.getArduinoReading();
+
 	}
 
 	ngAfterViewInit() {
 		this.initialiseAllGauges();
+
+		//Remake the chart based on the change of date specified by the datepicker notification.
+		this.datePickerService.datePickerDateSubject.subscribe(async ()=>{
+			console.log('datePickerDateSubject notification received!');
+			this.myChart.destroy();
+			await this.initialiseGraph();
+		})
 	}
 
 	/*#region MAIN METHODS*/
@@ -295,10 +304,7 @@ export class DashboardComponent implements OnInit {
 			var dataSetLabel;
 
 			//console.log('graphFromDb is: ' + dataArray.toString());
-
-			//Time labels for x-axis
 			xAxisData = dataArray[0];
-			//console.log('xAxisdata count is: ' + xAxisData.length);
 
 			//Sensor reading values for y-axis.
 			yAxisData = dataArray[1];	
@@ -447,7 +453,7 @@ export class DashboardComponent implements OnInit {
 					}
 				}
 			}	
-	
+		
 			//Make sure to set the canvas width and height, otherwise a drawImage() method error is thrown 
 			//because a dimensonless canvas has been passed in to new Chart().
 			var myChartCanvas = <HTMLCanvasElement>document.getElementById('myChart');
@@ -462,16 +468,25 @@ export class DashboardComponent implements OnInit {
 
 		}); //returns data for x & y axes, as well as the max value for the y-axis data
 
+		await this.getMinMaxDatabaseData().then((minMaxDataArray)=>{
+			//do something with the returned min/max datepicker data.
+			//console.log(`minMaxDataArray is: ${minMaxDataArray}`);
+			this.datePickerService.setMinMaxDates(minMaxDataArray[0], minMaxDataArray[1]);
+		});
+
+
 	}
 
-	async getDatabaseData() :Promise<any[]>{
+	async getDatabaseData(): Promise<any[]>{
 		console.log('Enter getDatabaseData().');
 
 		return await new Promise(async (resolve,reject)=>{
 
 			var dataArray = new Array();
-			var selectedDate = this.chartDateService.getDatePickerDate();
+			var selectedDate = this.datePickerService.getDatePickerDate();
+			//alert(`selectedDate is: ${selectedDate}`);
 
+			//Gets Chart data - either all or by given day.
 			var dbResultObserver = await this.databaseService.getData(this.selectedChart, selectedDate);
 			dbResultObserver.subscribe((data)=>{
 
@@ -484,27 +499,30 @@ export class DashboardComponent implements OnInit {
 				//console.log("\nArray containing JSON is: " + arrayContainingJson);
 				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
 				//console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
-				
+				console.log(`dbRowsAsJson.length is: ${arrayContainingJson.length}`);
+
 				var xAxisData = new Array();
 				var yAxisData = new Array();
 
-				for (const row in dbRowsAsJson) {
-					if (dbRowsAsJson.hasOwnProperty(row)) {
-						//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
-						//"1980-02-27 08:23:00" format.
-						var time :string = (dbRowsAsJson[row]['time']);
-						var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
-						//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
-						//console.log('timeStamp is: ' + timeStamp);
-						//console.log('reading is: ' + reading);
-						xAxisData.push(time);
-						yAxisData.push(reading);						
+				if(arrayContainingJson.length > 0) {
+					for (const row in dbRowsAsJson) {
+						if (dbRowsAsJson.hasOwnProperty(row)) {
+							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
+							//"1980-02-27 08:23:00" format.
+							var time :string = (dbRowsAsJson[row]['time']);
+							var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
+							//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
+							//console.log('timeStamp is: ' + timeStamp);
+							//console.log('reading is: ' + reading);
+							xAxisData.push(time);
+							yAxisData.push(reading);						
+						}
 					}
-				}
-				//console.log(`xAxisData is: ${xAxisData.toString()} containing ${xAxisData.length} entries`);
-				//console.log(`yAxisData is: ${yAxisData.toString()} containing ${yAxisData.length} entries`);
+					//console.log(`xAxisData is: ${xAxisData.toString()} containing ${xAxisData.length} entries`);
+					//console.log(`yAxisData is: ${yAxisData.toString()} containing ${yAxisData.length} entries`);
 
-				dataArray = [xAxisData,yAxisData];
+					dataArray = [xAxisData,yAxisData];					
+				}
 
 				resolve(dataArray);
 
@@ -513,6 +531,43 @@ export class DashboardComponent implements OnInit {
 		});
 
 
+	}
+
+	async getMinMaxDatabaseData(): Promise<any[]>{
+		console.log('Enter getMinMaxDatabaseData().');
+
+		return await new Promise(async (resolve,reject)=>{
+
+			//Only gets min/max datepicker dates.
+			var minMaxDatePickerDates = await this.databaseService.getChartMinMaxDates(this.selectedChart, 'date');
+			minMaxDatePickerDates.subscribe((data)=>{
+				//console.log(`minMaxDatePickerDates data is: ${data}`);
+
+				//console.log('\nReturned data in getDatabaseData() is: ' + data);
+				var dataIncludingPrefix = JSON.parse(data);
+				//console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
+				var prefix = dataIncludingPrefix.substring(0,2);
+				//console.log("\nReading prefix from server is: " + prefix);
+				var arrayContainingJson = dataIncludingPrefix.substring(2,);
+				//console.log("\nArray containing JSON is: " + arrayContainingJson);
+				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
+				//console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
+
+				var minMaxPickerDates = new Array<string>();
+
+				if(arrayContainingJson.length > 0) {
+					for (const row in dbRowsAsJson) {
+						if (dbRowsAsJson.hasOwnProperty(row)) {
+							minMaxPickerDates.push(dbRowsAsJson[row]['Min(date)']);
+							minMaxPickerDates.push(dbRowsAsJson[row]['Max(date)']);
+						}
+					}
+				}
+				//console.log(`minMaxPickerDates is: ${minMaxPickerDates}`);
+				resolve(minMaxPickerDates);
+			});
+
+		});
 	}
 
 	async ShowChartDetailView(event:Event){
@@ -626,11 +681,13 @@ export class DashboardComponent implements OnInit {
 			},
 			() => {
 				console.log('Connection Closed!');
-				alert('Connection Closed!');
+				//alert('Connection Closed!');
 			}		
 		);
 
 	}
+
+
 
 	/*#endregion*/
 

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { GetChartDateServiceService } from './get-chart-date-service.service';
+import { GetDatePickerService } from './get-chart-date-service.service';
 
 describe('GetChartDateServiceService', () => {
-  let service: GetChartDateServiceService;
+  let service: GetDatePickerService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(GetChartDateServiceService);
+    service = TestBed.inject(GetDatePickerService);
   });
 
   it('should be created', () => {

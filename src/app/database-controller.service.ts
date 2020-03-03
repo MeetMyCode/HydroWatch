@@ -21,7 +21,6 @@ export class DatabaseControllerService {
 		Once the data has beeen received, extract the x and y data, as well as the max value for the y-data
 		and put this into the returned object.
 		*/
-
 		console.log(`\nTable passed to getData() is: ${table} and date is ${date}`);
 
 		var tableData: Observable<string>;
@@ -29,7 +28,7 @@ export class DatabaseControllerService {
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get(`\n${this.httpBaseAddress}/api/${table}/${date}`, {
+			tableData = this.http.get(`\n${this.httpBaseAddress}/api/${table}/${date}/null`, {
 				responseType: "text"
 			});
 
@@ -39,11 +38,29 @@ export class DatabaseControllerService {
 
 		});
 
-
-
 	}
 
+	async getChartMinMaxDates(table, column): Promise<any>{
 
+		console.log(`\nTable passed to getChartMinMaxDates() is: ${table} and column is ${column}`);
+
+		var tableData: Observable<string>;
+		var tableDataObservable: Observable<string>;
+
+		return await new Promise((resolve, reject)=>{
+
+			tableData = this.http.get(`\n${this.httpBaseAddress}/api/${table}/null/${column}`, {
+				responseType: "text"
+			});
+
+			tableDataObservable = from(tableData);
+
+			resolve(tableDataObservable);
+
+		});
+	
+		
+	}
 
 }
 

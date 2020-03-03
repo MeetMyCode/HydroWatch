@@ -66,13 +66,14 @@ function createServer(){
 
     var table = tableAndDateSections[0];
     var date = tableAndDateSections[1];
-    var datePickerDate = formatDateStringForMySql(date);
-    process.stdout.write('\nreq.url prefix is: ' + urlPrefix + ', table is: ' + dbTables[table] + ' and date is: ' + datePickerDate);
+    var column = tableAndDateSections[2];
 
-    if (urlPrefix == "/api/") {
+    process.stdout.write('\nreq.url prefix is: ' + urlPrefix + ', table is: ' + dbTables[table] + ', date is: ' + date + ' and column is ' + column);
 
-      process.stdout.write('\napi address is: ' + req.url);
-      await getDataFrom(table, datePickerDate).then((dbData)=>{
+    if (urlPrefix == "/api/" && column == 'null') {
+
+      process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
+      await getDataFrom(table, date).then((dbData)=>{
         //process.stdout.write('\ndbData is: ' + dbData);
         res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
         var stringifyString = JSON.stringify(dbData);
@@ -81,6 +82,16 @@ function createServer(){
         res.end();
       });
 
+    }else if(urlPrefix == "/api/" && column != 'null'){
+      process.stdout.write('\napi address for getMinMaxDatePickerDates() is: ' + req.url);
+      await getMinMaxDatePickerDates(table, column).then((dbData)=>{
+        //process.stdout.write('\ndbData is: ' + dbData);
+        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+        var stringifyString = JSON.stringify(dbData);
+        res.write(stringifyString);
+        process.stdout.write('\nhttp response data is: ' + dbData);
+        res.end();
+      });
     }else{
       var mimeType = path.extname(req.url);
 
@@ -181,10 +192,11 @@ function createServer(){
   }).listen(webServerPort);  
 }
 
-function getDataFrom(table, date=null) {
+function getDataFrom(table, date=null) {  
   
     return new Promise((resolve, reject) => {
       process.stdout.write('\nTrying to get data from table: ' + table);
+      process.stdout.write(`\nIn getDataFrom(), table: ${table} and date: ${date}`);
 
       //a query string is received as the incoming message. Execute it against the database.
       var result = '';
@@ -192,10 +204,17 @@ function getDataFrom(table, date=null) {
       var baseQueryString = 'SELECT * FROM';
       var queryString;
 
-      if (date == null) {
+      if (table && !date ) {
+        //Select all records for a given table
         queryString = `${baseQueryString} ${dbTables[table]}`;
+
+      }else if(table && date){
+        //Select all records from a given table for a given date.
+        var formattedDate = formatDateStringForMySql(date);
+        queryString = `${baseQueryString} ${dbTables[table]} WHERE date="${formattedDate}"`;
+
       }else{
-        queryString = `${baseQueryString} ${dbTables[table]} WHERE date="${date}"`;
+        process.stdout.write('\nDuff queryString in getDataFrom()!');
       }
 
       process.stdout.write('\nQuery string is: ' + queryString);
@@ -221,7 +240,7 @@ function getDataFrom(table, date=null) {
             result = JSON.stringify(results);
             finalResult = prefix + result;
 
-            process.stdout.write(`\nResult of Database Query is: ' + ${results.length} entries`);
+            process.stdout.write(`\nResult of Database Query is: ${results.length} entries`);
             resolve(finalResult);
 
           });
@@ -233,16 +252,75 @@ function getDataFrom(table, date=null) {
 
 }
 
+function getMinMaxDatePickerDates(table, column) {  
+  
+  return new Promise((resolve, reject) => {
+    process.stdout.write('\nTrying to get data from table: ' + table);
+    process.stdout.write(`\nIn getMinMaxDatePickerDates(), table: ${table} and column: ${column}`);
+
+
+    //a query string is received as the incoming message. Execute it against the database.
+    var result = '';
+    var finalResult = '';
+    var queryString;
+
+    if (table && column ) {
+      //Select all records for a given table
+      queryString = `SELECT Min(${column}), Max(${column}) FROM ${dbTables[table]}`;
+
+    }else{
+      process.stdout.write('\nDuff queryString in getDataFrom()!');
+    }
+
+    process.stdout.write('\nQuery string is: ' + queryString);
+    dbConnectionPool.getConnection((err, poolConnection) => {
+      if (err) {
+        process.stdout.write('\nError getting pool connection: ' + err);
+      }else{
+        process.stdout.write('\nDatabase Connection from Pool established!');
+
+        poolConnection.query(
+          queryString,
+          function (error, results, fields) {
+            process.stdout.write('\nQuery sent to database: ' + queryString);
+            //process.stdout.write('\nResult of Query: ' + JSON.stringify(results));      
+          try {  
+            if (error) throw error;    
+          } catch (error) {
+            process.stdout.write('\nError thrown when trying to connect to db in poolConnection.query(): ' + error);
+            process.stdout.write('\nQuery string was: ' + queryString);
+
+          }
+          var prefix = prefixes[table];
+          result = JSON.stringify(results);
+          finalResult = prefix + result;
+
+          process.stdout.write(`\nResult of Database Query is: ${results.length} entries`);
+          resolve(finalResult);
+
+        });
+        dbConnectionPool.releaseConnection(poolConnection);
+      }
+    })
+
+  })
+
+}
+
 function formatDateStringForMySql(dateString){
 
-  console.log(`\ndateString in formatDateStringForMySql is ${dateString}`);
-  var formattedDatestring = '';
-  var tempString = dateString.split('-');
-  var day = tempString[0];
-  var month = tempString[1];
-  var year = tempString[2];
+  var formattedDatestring;
 
-  formattedDatestring = `${year}-${month}-${day}`;
+  if (dateString != null) {
+    process.stdout.write(`\ndateString in formatDateStringForMySql is ${dateString}`);
+    var tempString = dateString.split('-');
+    var day = tempString[0];
+    var month = tempString[1];
+    var year = tempString[2];
+
+    formattedDatestring = `${year}-${month}-${day}`;   
+  }
+
   return formattedDatestring;
 }
 

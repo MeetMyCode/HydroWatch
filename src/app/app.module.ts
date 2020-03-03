@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { WebSocketService } from './web-socket.service';
 import { DatabaseControllerService } from './database-controller.service';
+import { GetDatePickerService } from "./get-chart-date-service.service";
 import { TestComponent } from './test-component/test-component.component';
 import { TempComponent } from './temp/temp.component';
 import { HttpClientModule } from '@angular/common/http';
@@ -29,7 +30,7 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
     FontAwesomeModule,
     NgbModule
   ],
-  providers: [WebSocketService,DatabaseControllerService],
+  providers: [WebSocketService,DatabaseControllerService, GetDatePickerService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
