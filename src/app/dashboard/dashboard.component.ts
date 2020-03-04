@@ -252,7 +252,7 @@ export class DashboardComponent implements OnInit {
 
 	//Change displayed chart from within the overlay.
 	async chartButtonClicked(event){
-		//alert("chartButtonClicked event fired!");
+		//console.log('Entered chartButtonClicked()!');
 
 		//reset when changing charts.
 		this.tempPixelsPerDataPoint = this.defaultPixelsPerDataPoint;
@@ -293,179 +293,7 @@ export class DashboardComponent implements OnInit {
 		console.log('Enter initialiseGraph().');
 
 		await this.getDatabaseData().then((dataArray)=>{
-
-			console.log('Enter getDatabaseData().then()');
-
-			//graph variables
-			var xAxisData = new Array();
-			var yAxisData = new Array();
-			var xAxisTitle;
-			var yAxisTitle;
-			var dataSetLabel;
-
-			//console.log('graphFromDb is: ' + dataArray.toString());
-			xAxisData = dataArray[0];
-
-			//Sensor reading values for y-axis.
-			yAxisData = dataArray[1];	
-			//console.log('yAxisdata count is: ' + yAxisData.length);
-
-			this.setChartAreaWidth(yAxisData);
-
-			switch (this.selectedChart){			
-				//temp
-				case 0:
-					//populate graph with data here.
-					xAxisTitle = 'Time';
-					yAxisTitle = 'Temperature in Degrees Celsius';
-					dataSetLabel = 'Temp';
-					break;
-					
-				//ph	
-				case 1:
-					//populate graph with data here.
-					xAxisTitle = 'Time';
-					yAxisTitle = 'pH';
-					dataSetLabel = 'pH';
-					break;
-
-				//ec
-				case 2:
-					//populate graph with data here.
-					xAxisTitle = 'Time';
-					yAxisTitle = 'EC in mS/cm';
-					dataSetLabel = 'EC';
-					break;
-
-				//orp
-				case 3:
-					//populate graph with data here.
-					xAxisTitle = 'Time';
-					yAxisTitle = 'ORP in mV';
-					dataSetLabel = 'ORP';
-					break;
-			
-				default:	
-					console.log('Unknown Chart Requested - ' + this.selectedChart);			
-					break;
-			}
-
-			var rectangleSet = false;
-			var chartData = {
-				//labels: this.generateLabels(),
-				labels: xAxisData,
-				datasets: [{
-					labels: dataSetLabel,
-					//labels: dataSetLabel,
-					//data: this.generateData()
-					data: yAxisData,
-					fill: true,
-					borderColor: 'green'
-				}]
-			};
-			var chartOptions = {
-				maintainAspectRatio: false,
-				responsive: true,
-				tooltips: {
-					enabled: true
-				},
-				legend: {
-					display: false
-				},
-				scales: {
-					xAxes: [{
-						display: true,
-						scaleLabel: {
-							display: true,
-							labelString: xAxisTitle,
-							fontSize: 20,	
-							fontColor: 'black'						
-						},
-						ticks: {
-							beginAtZero: true,
-							min: 0,
-							fontSize: 12,
-							display: true,
-							fontColor: 'black'
-						}
-					}],
-					yAxes: [{
-						scaleLabel: {
-							display: true,
-							labelString: yAxisTitle,
-							fontSize: 20,	
-							fontColor: 'black'						
-						},
-						ticks: {
-							display: true,
-							min: 0,
-							max: parseInt(this.chartMaxValues[this.selectedChart]),
-							fontSize: 12,
-							beginAtZero: true,
-							fontColor: 'black'
-						}
-					}]
-				},
-				animation: {
-					duration: 1,
-					onComplete: function () {
-						if (!rectangleSet) {
-
-							var scale = window.devicePixelRatio;                       
-
-							//var sourceCanvas = myChart.chart.canvas;
-							var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
-
-							var copyWidth = myChart.scales['y-axis-0'].width - 10;
-							var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
-
-							var targetCtx = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
-
-							targetCtx.scale(scale, scale);
-							targetCtx.canvas.width = copyWidth * scale;
-							targetCtx.canvas.height = copyHeight * scale;
-
-							targetCtx.canvas.style.width = `${copyWidth}px`;
-							targetCtx.canvas.style.height = `${copyHeight}px`;
-							targetCtx.drawImage(sourceCanvas, 0, 0, copyWidth * scale, copyHeight * scale, 0, 0, copyWidth * scale, copyHeight * scale);
-
-							var sourceCtx = sourceCanvas.getContext('2d');
-
-							// Normalize coordinate system to use css pixels.
-
-							sourceCtx.clearRect(0, 0, copyWidth * scale, copyHeight * scale);
-							rectangleSet = true;
-						}
-					},
-					onProgress: function () {
-						if (rectangleSet === true) {
-							var copyWidth = myChart.scales['y-axis-0'].width;
-							var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
-
-							var sourceCtx = myChart.chart.canvas.getContext('2d');
-							sourceCtx.clearRect(0, 0, copyWidth, copyHeight);
-						}
-					},
-					onResize: function(){
-						var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
-						var targetCanvas = <HTMLCanvasElement>document.getElementById("axis-Test");
-						targetCanvas.height = sourceCanvas.height;
-					}
-				}
-			}	
-		
-			//Make sure to set the canvas width and height, otherwise a drawImage() method error is thrown 
-			//because a dimensonless canvas has been passed in to new Chart().
-			var myChartCanvas = <HTMLCanvasElement>document.getElementById('myChart');
-			myChartCanvas.width = innerWidth;
-			myChartCanvas.height = innerHeight;
-			var myChart = new Chart(myChartCanvas, {
-				type: 'line',
-				data: chartData,
-				options: chartOptions
-			});
-			this.myChart = myChart;
-
+			this.drawChart(dataArray);
 		}); //returns data for x & y axes, as well as the max value for the y-axis data
 
 		await this.getMinMaxDatabaseData().then((minMaxDataArray)=>{
@@ -475,6 +303,180 @@ export class DashboardComponent implements OnInit {
 		});
 
 
+	}
+
+	drawChart(dataArray){
+		console.log('Enter getDatabaseData().then()');
+
+		//graph variables
+		var xAxisData = new Array();
+		var yAxisData = new Array();
+		var xAxisTitle;
+		var yAxisTitle;
+		var dataSetLabel;
+
+		//console.log('graphFromDb is: ' + dataArray.toString());
+		xAxisData = dataArray[0];
+
+		//Sensor reading values for y-axis.
+		yAxisData = dataArray[1];	
+		//console.log('yAxisdata count is: ' + yAxisData.length);
+
+		this.setChartAreaWidth(yAxisData);
+
+		switch (this.selectedChart){			
+			//temp
+			case 0:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'Temperature in Degrees Celsius';
+				dataSetLabel = 'Temp';
+				break;
+				
+			//ph	
+			case 1:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'pH';
+				dataSetLabel = 'pH';
+				break;
+
+			//ec
+			case 2:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'EC in mS/cm';
+				dataSetLabel = 'EC';
+				break;
+
+			//orp
+			case 3:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'ORP in mV';
+				dataSetLabel = 'ORP';
+				break;
+		
+			default:	
+				console.log('Unknown Chart Requested - ' + this.selectedChart);			
+				break;
+		}
+
+		var rectangleSet = false;
+		var chartData = {
+			//labels: this.generateLabels(),
+			labels: xAxisData,
+			datasets: [{
+				labels: dataSetLabel,
+				//labels: dataSetLabel,
+				//data: this.generateData()
+				data: yAxisData,
+				fill: true,
+				borderColor: 'green'
+			}]
+		};
+		var chartOptions = {
+			maintainAspectRatio: false,
+			responsive: true,
+			tooltips: {
+				enabled: true
+			},
+			legend: {
+				display: false
+			},
+			scales: {
+				xAxes: [{
+					display: true,
+					scaleLabel: {
+						display: true,
+						labelString: xAxisTitle,
+						fontSize: 20,	
+						fontColor: 'black'						
+					},
+					ticks: {
+						beginAtZero: true,
+						min: 0,
+						fontSize: 12,
+						display: true,
+						fontColor: 'black'
+					}
+				}],
+				yAxes: [{
+					scaleLabel: {
+						display: true,
+						labelString: yAxisTitle,
+						fontSize: 20,	
+						fontColor: 'black'						
+					},
+					ticks: {
+						display: true,
+						min: 0,
+						max: parseInt(this.chartMaxValues[this.selectedChart]),
+						fontSize: 12,
+						beginAtZero: true,
+						fontColor: 'black'
+					}
+				}]
+			},
+			animation: {
+				duration: 1,
+				onComplete: function () {
+					if (!rectangleSet) {
+
+						var scale = window.devicePixelRatio;                       
+
+						//var sourceCanvas = myChart.chart.canvas;
+						var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+
+						var copyWidth = myChart.scales['y-axis-0'].width - 10;
+						var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
+
+						var targetCtx = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+
+						targetCtx.scale(scale, scale);
+						targetCtx.canvas.width = copyWidth * scale;
+						targetCtx.canvas.height = copyHeight * scale;
+
+						targetCtx.canvas.style.width = `${copyWidth}px`;
+						targetCtx.canvas.style.height = `${copyHeight}px`;
+						targetCtx.drawImage(sourceCanvas, 0, 0, copyWidth * scale, copyHeight * scale, 0, 0, copyWidth * scale, copyHeight * scale);
+
+						var sourceCtx = sourceCanvas.getContext('2d');
+
+						// Normalize coordinate system to use css pixels.
+
+						sourceCtx.clearRect(0, 0, copyWidth * scale, copyHeight * scale);
+						rectangleSet = true;
+					}
+				},
+				onProgress: function () {
+					if (rectangleSet === true) {
+						var copyWidth = myChart.scales['y-axis-0'].width;
+						var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
+
+						var sourceCtx = myChart.chart.canvas.getContext('2d');
+						sourceCtx.clearRect(0, 0, copyWidth, copyHeight);
+					}
+				},
+				onResize: function(){
+					var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+					var targetCanvas = <HTMLCanvasElement>document.getElementById("axis-Test");
+					targetCanvas.height = sourceCanvas.height;
+				}
+			}
+		}	
+	
+		//Make sure to set the canvas width and height, otherwise a drawImage() method error is thrown 
+		//because a dimensonless canvas has been passed in to new Chart().
+		var myChartCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+		myChartCanvas.width = innerWidth;
+		myChartCanvas.height = innerHeight;
+		var myChart = new Chart(myChartCanvas, {
+			type: 'line',
+			data: chartData,
+			options: chartOptions
+		});
+		this.myChart = myChart;
 	}
 
 	async getDatabaseData(): Promise<any[]>{
@@ -873,6 +875,17 @@ export class DashboardComponent implements OnInit {
 	
 	/*#region UTILITY METHODS*/
 
+	extractShortDateFromLongDate(longDateString){
+		//console.log('dateString is: ' + dateString);
+		var splitStringArray = longDateString.split('-');
+		var day = splitStringArray[2];
+		var month = splitStringArray[1];
+		var year = splitStringArray[0];
+		var shortDateString = `${day}-${month}-${year}`;
+
+		return shortDateString;
+	}
+
 	resetReadingCounter(){
 		this.timeTillReading = this.readingEvery;
 	}
@@ -1034,5 +1047,101 @@ export class DashboardComponent implements OnInit {
 	}
 
 	/*#endregion*/
+
+	//#region STATS METHODS
+
+	async getDailyAverages(){
+		console.log('Entered getDailyAverages()');
+		await new Promise(async (resolve,reject)=>{
+
+			var dataArray = new Array();
+
+			//Gets Chart data - either all or by given day - for stats puposes.
+			var dbResultObserver = await this.databaseService.getData(this.selectedChart);
+			dbResultObserver.subscribe((data)=>{
+
+				//console.log('\nReturned data in getDatabaseData() is: ' + data);
+				var dataIncludingPrefix = JSON.parse(data);
+				//console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
+				var prefix = dataIncludingPrefix.substring(0,2);
+				//console.log("\nReading prefix from server is: " + prefix);
+				var arrayContainingJson = dataIncludingPrefix.substring(2,);
+				//console.log("\nArray containing JSON is: " + arrayContainingJson);
+				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
+				//console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
+				console.log(`dbRowsAsJson.length is: ${arrayContainingJson.length}`);
+
+				var xAxisData = new Array();
+				var yAxisData = new Array();
+
+				var uniqueXTotalY = {};
+				var dateOccurrences = {};
+				var XtoYvalAverages = {};
+
+				if(arrayContainingJson.length > 0) {
+					for (const row in dbRowsAsJson) {
+						if (dbRowsAsJson.hasOwnProperty(row)) {
+							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
+							//"1980-02-27 08:23:00" format.
+							var date :string = this.extractShortDateFromLongDate((dbRowsAsJson[row]['date']).substring(0,10));
+							var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
+							//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
+							//console.log('timeStamp is: ' + timeStamp);
+							//console.log('reading is: ' + reading);
+							xAxisData.push(date);
+							yAxisData.push(reading);						
+						}
+					}
+					//console.log(`xAxisData is: ${xAxisData.toString()} containing ${xAxisData.length} entries`);
+					//console.log(`yAxisData is: ${yAxisData.toString()} containing ${yAxisData.length} entries`);
+
+					//dataArray = [xAxisData,yAxisData];					
+				}
+
+				//Once the x and y axis arrays have been populated, calculate the averages.
+				for (let i = 0; i < xAxisData.length; i++) {
+					if (!uniqueXTotalY[xAxisData[i]]) {
+						uniqueXTotalY[xAxisData[i]] = yAxisData[i];
+						dateOccurrences[xAxisData[i]] = 1;
+					}else{
+						uniqueXTotalY[xAxisData[i]] += yAxisData[i];
+						dateOccurrences[xAxisData[i]] += 1;
+					}
+				}
+
+				//populate XtoYvalAverages dictionary, which is a dict of date:avg reading.
+				for (const key in uniqueXTotalY) {
+					if (uniqueXTotalY.hasOwnProperty(key)) {
+						var avg = uniqueXTotalY[key]/dateOccurrences[key];
+						XtoYvalAverages[key] = avg;						
+					}
+				}
+
+				xAxisData = Object.keys(XtoYvalAverages);
+				yAxisData = Object.values(XtoYvalAverages);
+
+				dataArray = [xAxisData, yAxisData];
+
+				this.drawChart(dataArray);
+				//resolve(dataArray);
+
+			});
+
+
+		});
+	}
+
+	getWeeklyAverages(){
+		console.log('Entered getWeeklyAverages()');
+	}
+
+	getMonthlyAverages(){
+		console.log('Entered getMonthlyAverages()');
+	}
+
+	//#endregion
+
+
+
 
 }//END OF COMPONENT

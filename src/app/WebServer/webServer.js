@@ -204,11 +204,11 @@ function getDataFrom(table, date=null) {
       var baseQueryString = 'SELECT * FROM';
       var queryString;
 
-      if (table && !date ) {
+      if (table && date == 'null') {
         //Select all records for a given table
         queryString = `${baseQueryString} ${dbTables[table]}`;
 
-      }else if(table && date){
+      }else if(table && date != 'null'){
         //Select all records from a given table for a given date.
         var formattedDate = formatDateStringForMySql(date);
         queryString = `${baseQueryString} ${dbTables[table]} WHERE date="${formattedDate}"`;

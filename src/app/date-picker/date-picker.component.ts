@@ -32,21 +32,27 @@ export class DatePickerComponent implements OnInit {
 
   onChange(){
     var dateString = $('#dateSelector').val().toString();
-    //console.log('dateString is: ' + dateString);
-    var splitStringArray = dateString.split('-');
-    var day = splitStringArray[2];
-    var month = splitStringArray[1];
-    var year = splitStringArray[0];
-    var newDateString = `${day}-${month}-${year}`;
-    this.datePickerDate = newDateString;
-    $('#dateSelector').val(newDateString);
 
-    this.datePickerService.updateChartWithNewDate(newDateString);
+    this.datePickerDate = this.extractShortDateFromLongDate(dateString);;
+    $('#dateSelector').val(this.datePickerDate);
+
+    this.datePickerService.updateChartWithNewDate(this.datePickerDate);
 
   }
 
   getDatePickerDate(){
     return $('#dateSelector').val();
+  }
+
+  extractShortDateFromLongDate(longDateString){
+    //console.log('dateString is: ' + dateString);
+    var splitStringArray = longDateString.split('-');
+    var day = splitStringArray[2];
+    var month = splitStringArray[1];
+    var year = splitStringArray[0];
+    var shortDateString = `${day}-${month}-${year}`;
+
+    return shortDateString;
   }
 
 

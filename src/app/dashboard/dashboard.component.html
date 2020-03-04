@@ -97,6 +97,20 @@
 				<app-date-picker></app-date-picker>
 			</div>
 
+			<div id="statsWrapper">
+				<label for="statSelector"></label>
+				<div class="dropdown">
+					<button class="btn btn-secondary dropdown-toggle" type="button" id="statSelector" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					  Statistics
+					</button>
+					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					  <a class="dropdown-item" href="#" (click)="getDailyAverages()">Daily Average</a>
+					  <a class="dropdown-item" href="#" (click)="getWeeklyAverages()">Weekly Average</a>
+					  <a class="dropdown-item" href="#" (click)="getMonthlyAverages()">Monthly Average</a>
+					</div>
+				  </div>
+			</div>
+
 			<div class="magBtnWrapper d-flex h-100">
 				<button class="magBtn" id="magMinusBtn" (click)="chartZoomOut($event)"><fa-icon class="fa-lg" [icon]="magMinusIcon"></fa-icon></button>
 				<button class="magBtn" id="magPlusBtn" (click)="chartZoomIn($event)"><fa-icon class="fa-lg" [icon]="magPlusIcon"></fa-icon></button>				

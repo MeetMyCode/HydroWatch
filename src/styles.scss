@@ -22,21 +22,51 @@ body {
   
 //MEDIA QUERIES
 @include media-breakpoint-down(md) {
+  //#DetailView{
+    //transform: rotate(-90deg);
+    //transform-origin: top left;
+    // position: absolute;
+    // top: 100%;
+    // left: 0;
+    // height: 95%;
+    // width: 95%;
+  //}
+}
+
+@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
   #DetailView {
     transform: rotate(-90deg);
+    // transform-origin: left top;
+    // width: 100vh;
+    // overflow-x: hidden;
+    // position: absolute;
+    // top: 100%;
+    // left: 0;
   }
 }
 
 //ADJUST PARAMETER VALUE FONT-SIZES BASED ON SCREEN SIZE
 @include media-breakpoint-only(xs) {
   .bubbleText {
-    font-size: 2em !important;
+    font-size: 1.5em !important;
   }
   html, body{
     overflow: auto !important;
   }
   #nextReadingText{
     font-size: 0.9em;
+  }
+
+  .ParameterContainer{
+    height: 200px !important;
+    margin-bottom: 5px !important;
+
+  }
+
+  .ParameterValue{
+    //height: 100% !important;
+    width: 100% !important;
+    padding: 5px !important;
   }
 }
 
