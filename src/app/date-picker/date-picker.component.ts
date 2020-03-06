@@ -30,14 +30,13 @@ export class DatePickerComponent implements OnInit {
     });
   }
 
-  onChange(){
+  onDateSelect(){
     var dateString = $('#dateSelector').val().toString();
 
     this.datePickerDate = this.extractShortDateFromLongDate(dateString);;
     $('#dateSelector').val(this.datePickerDate);
 
     this.datePickerService.updateChartWithNewDate(this.datePickerDate);
-
   }
 
   getDatePickerDate(){
@@ -53,6 +52,35 @@ export class DatePickerComponent implements OnInit {
     var shortDateString = `${day}-${month}-${year}`;
 
     return shortDateString;
+  }
+
+  DateIsDisabled(date: NgbDate, listOfDates: [string]){
+
+    listOfDates.forEach(dateItem => {
+
+      var newDate = this.getDateFromString(dateItem);
+
+      if (date.year === newDate.getFullYear()) {
+        if (date.month === newDate.getMonth()) {
+          return date.day === newDate.getDay();
+        }
+      }
+    });
+
+    return false;
+  }
+
+  getDateFromString(date: string): Date{
+
+    var dateSections = date.split('-');
+    var day = dateSections[0];
+    var month = dateSections[1];
+    var year = dateSections[2];
+
+    var dateObject = new Date(`${year}-${month}-${day}`);
+
+
+    return dateObject;
   }
 
 

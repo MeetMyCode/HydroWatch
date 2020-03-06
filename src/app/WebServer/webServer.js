@@ -78,7 +78,7 @@ function createServer(){
         res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
         var stringifyString = JSON.stringify(dbData);
         res.write(stringifyString);
-        process.stdout.write('\nhttp response data is: ' + dbData);
+        process.stdout.write('\nhttp response data is: \n' + dbData);
         res.end();
       });
 
@@ -89,7 +89,7 @@ function createServer(){
         res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
         var stringifyString = JSON.stringify(dbData);
         res.write(stringifyString);
-        process.stdout.write('\nhttp response data is: ' + dbData);
+        process.stdout.write('\nhttp response data is: \n' + dbData);
         res.end();
       });
     }else{
@@ -238,6 +238,10 @@ function getDataFrom(table, date=null) {
             }
             var prefix = prefixes[table];
             result = JSON.stringify(results);
+
+            process.stdout.write(`\nPretty print of results:\n`);
+            process.stdout.write(JSON.stringify(results,null,4));
+
             finalResult = prefix + result;
 
             process.stdout.write(`\nResult of Database Query is: ${results.length} entries`);

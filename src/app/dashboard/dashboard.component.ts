@@ -8,6 +8,8 @@ import { GetDatePickerService } from '../get-chart-date-service.service';
 
 var Chart = require('chart.js');
 
+const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
 const maxTemp: string = '40';
 const maxPh:string = '14';
 const maxEc:string = '4';
@@ -1050,11 +1052,12 @@ export class DashboardComponent implements OnInit {
 
 	//#region STATS METHODS
 
-	async getDailyAverages(){
+	async getReadingAverages(event){
 		console.log('Entered getDailyAverages()');
 		await new Promise(async (resolve,reject)=>{
 
 			var dataArray = new Array();
+			var timeFrame = <HTMLLinkElement>event.target.id;
 
 			//Gets Chart data - either all or by given day - for stats puposes.
 			var dbResultObserver = await this.databaseService.getData(this.selectedChart);
@@ -1074,31 +1077,53 @@ export class DashboardComponent implements OnInit {
 				var xAxisData = new Array();
 				var yAxisData = new Array();
 
-				var uniqueXTotalY = {};
-				var dateOccurrences = {};
-				var XtoYvalAverages = {};
-
 				if(arrayContainingJson.length > 0) {
 					for (const row in dbRowsAsJson) {
 						if (dbRowsAsJson.hasOwnProperty(row)) {
-							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
-							//"1980-02-27 08:23:00" format.
+							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". 
 							var date :string = this.extractShortDateFromLongDate((dbRowsAsJson[row]['date']).substring(0,10));
 							var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
-							//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
-							//console.log('timeStamp is: ' + timeStamp);
-							//console.log('reading is: ' + reading);
 							xAxisData.push(date);
-							yAxisData.push(reading);						
+							yAxisData.push(reading);	
 						}
 					}
 					//console.log(`xAxisData is: ${xAxisData.toString()} containing ${xAxisData.length} entries`);
 					//console.log(`yAxisData is: ${yAxisData.toString()} containing ${yAxisData.length} entries`);
-
-					//dataArray = [xAxisData,yAxisData];					
 				}
 
-				//Once the x and y axis arrays have been populated, calculate the averages.
+				dataArray = this.extractAverages(timeFrame, xAxisData, yAxisData);						
+				
+				//clear the chart before drawing it.
+				this.myChart.destroy();
+				this.drawChart(dataArray);
+			});
+
+
+		});
+	}
+
+	extractAverages(timeFrame, xAxisData, yAxisData): any[]{
+		console.log(`In extractAverages(), xAxisData is: ${xAxisData}`);
+
+		var uniqueXTotalY = {};
+		var dateOccurrences = {};
+		var XtoYvalAverages = {};
+		var dataArray = new Array();
+
+		//Time Frame variables.
+		var currentDate: Date = null;
+		var timeAheadDate: Date = null;
+		var previousDate: Date = null;
+		var currentMonth: number = null;
+		var previousMonth: number = null;
+		var nextMonth: number = null;
+
+		console.log(`In extractAverages(): \ntimeFrame is: ${timeFrame} \nxAxisData.length is ${xAxisData.length} and \nyAxisData.length is: ${yAxisData.length} `);
+		console.log(`xAxisData[0] is: ${xAxisData[0]}`);
+
+		switch (timeFrame) {
+			case 'daily':
+				//Once the x and y axis arrays have been populated, calculate the DAILY averages.
 				for (let i = 0; i < xAxisData.length; i++) {
 					if (!uniqueXTotalY[xAxisData[i]]) {
 						uniqueXTotalY[xAxisData[i]] = yAxisData[i];
@@ -1120,24 +1145,241 @@ export class DashboardComponent implements OnInit {
 				xAxisData = Object.keys(XtoYvalAverages);
 				yAxisData = Object.values(XtoYvalAverages);
 
-				dataArray = [xAxisData, yAxisData];
+				dataArray = [xAxisData,yAxisData];
+				
+			break;
+		
+			case 'weekly':
+				//Once the x and y axis arrays have been populated, calculate the DAILY averages.
+				for (let i = 0; i < xAxisData.length; i++) {
+					//console.log(`xAxisData is: ${xAxisData}`);
 
-				this.drawChart(dataArray);
-				//resolve(dataArray);
+					//console.log(`at this.getDateFromString(xAxisData[i]), xAxisData[i] is: ${xAxisData[i]}`);
+					//This is always set to the current iteration.
+					currentDate = this.getDateFromString(xAxisData[i]); 
 
-			});
+					//previousDate is only set here once uniqueXTotalY has been given an initial entry
+					//ergo if previousDate == null, it is the first iteration.
+					if (previousDate != null) {
+						previousDate = this.getLastUniqueDate(uniqueXTotalY);
+					}else{
+						timeAheadDate = this.getTimeAheadDate(timeFrame, xAxisData, previousDate);
+					}
+					console.log(`previousDate is: ${previousDate}`);
+					console.log(`currentDate is: ${currentDate}`);
+					console.log(`timeAheadDate is: ${timeAheadDate}`);
+					console.log(`xAxisData[i] is: ${xAxisData[i]}`);
+
+					if (previousDate != null && (currentDate >= previousDate) && (currentDate < timeAheadDate)) {
+						console.log(`currentDate is in the middle!`);
+						var lastUniqueDateString = this.getLastUniqueDateString(uniqueXTotalY);
+						uniqueXTotalY[lastUniqueDateString] += yAxisData[i];
+						dateOccurrences[lastUniqueDateString] += 1;
+					}else{
+						console.log(`currentDate is NOT in the middle or a first occurrence!`);
+						uniqueXTotalY[xAxisData[i]] = yAxisData[i];
+						dateOccurrences[xAxisData[i]] = 1;
+
+						//This sets the initial value of previousDate, based on the last entry in uniqueXTotalY.
+						previousDate = this.getLastUniqueDate(uniqueXTotalY);
+
+						//This sets the subsequent values of timeAheadDate.
+						timeAheadDate = this.getTimeAheadDate(timeFrame, xAxisData, previousDate);
+					}
+				}
+				console.log(`uniqueXTotalY: ${JSON.stringify(uniqueXTotalY)}`);	
 
 
-		});
+				//populate XtoYvalAverages dictionary, which is a dict of date:avg reading.
+				for (const key in uniqueXTotalY) {
+					if (uniqueXTotalY.hasOwnProperty(key)) {
+						var avg = uniqueXTotalY[key]/dateOccurrences[key];
+						XtoYvalAverages[key] = avg;	
+					}
+				}
+				//console.log(`XtoYvalAverages: ${JSON.stringify(XtoYvalAverages)}`);	
+
+				xAxisData = Object.keys(XtoYvalAverages);
+				yAxisData = Object.values(XtoYvalAverages);
+
+
+				console.log(`Weekly Avg x-Data: \n${xAxisData}`);
+				dataArray = [xAxisData,yAxisData];
+
+			break;
+
+			case 'monthly':
+				//Once the x and y axis arrays have been populated, calculate the DAILY averages.
+				for (let i = 0; i < xAxisData.length; i++) {
+					//console.log(`xAxisData is: ${xAxisData}`);
+
+					//console.log(`at this.getDateFromString(xAxisData[i]), xAxisData[i] is: ${xAxisData[i]}`);
+					//This is always set to the current iteration.
+					currentDate = this.getDateFromString(xAxisData[i]); 
+					currentMonth = new Date(xAxisData[0]).getMonth();
+					nextMonth = currentMonth + 1;
+
+					//previousMonth is only set here once uniqueXTotalY has been given an initial entry
+					//ergo if previousMonth == null, it is the first iteration.
+					if (previousMonth != null) {
+						previousMonth = this.getLastUniqueDate(uniqueXTotalY).getMonth();
+					}else{
+						previousMonth = currentMonth;
+					}
+					//console.log(`previousDate is: ${previousDate}`);
+					console.log(`currentDate is: ${currentDate}`);
+					//console.log(`timeAheadDate is: ${timeAheadDate}`);
+					console.log(`xAxisData[i] is: ${xAxisData[i]}`);
+
+					if (currentDate.getMonth() == currentMonth) {
+						console.log(`Still in the same month!`);
+						var lastUniqueMonth = this.getLastUniqueDate(uniqueXTotalY).getMonth();
+						var lastUniqueMonthString = months[lastUniqueMonth];
+						uniqueXTotalY[lastUniqueMonthString] += yAxisData[i];
+						dateOccurrences[lastUniqueMonthString] += 1;
+					}else{
+						console.log(`Different month or first occurrence!`);
+						currentMonth = currentDate.getMonth();
+						uniqueXTotalY[months[currentMonth]] = yAxisData[i];
+						dateOccurrences[months[currentMonth]] = 1;
+
+						//This sets the initial value of previousDate, based on the last entry in uniqueXTotalY.
+						previousMonth = currentMonth - 1;
+
+						//This sets the subsequent values of timeAheadDate.
+						nextMonth = currentMonth + 1;
+					}
+				}
+				console.log(`uniqueXTotalY: ${JSON.stringify(uniqueXTotalY)}`);	
+
+
+				//populate XtoYvalAverages dictionary, which is a dict of date:avg reading.
+				for (const key in uniqueXTotalY) {
+					if (uniqueXTotalY.hasOwnProperty(key)) {
+						var avg = uniqueXTotalY[key]/dateOccurrences[key];
+						XtoYvalAverages[key] = avg;	
+					}
+				}
+				//console.log(`XtoYvalAverages: ${JSON.stringify(XtoYvalAverages)}`);	
+
+				xAxisData = Object.keys(XtoYvalAverages);
+				yAxisData = Object.values(XtoYvalAverages);
+
+
+				console.log(`Weekly Avg x-Data: \n${xAxisData}`);
+				dataArray = [xAxisData,yAxisData];
+		
+			break;
+
+			default:
+				console.log(`Unknown timeFrame received in extractAverages(): ${timeFrame}`);
+			break;
+		}
+
+		return dataArray;
+
 	}
 
-	getWeeklyAverages(){
-		console.log('Entered getWeeklyAverages()');
+	getTimeAheadDate(timeFrame, xAxisData, previousDate): Date{
+		var timeAheadDate;
+
+		if (previousDate != null) {
+			console.log(`If previousDate is NOT null...`);
+			if (timeFrame == 'weekly') {
+				timeAheadDate = new Date(previousDate.getTime() + (6 * 86400000));
+				console.log(`weekly timeAheadDate is ${timeAheadDate} from previousDate: ${JSON.stringify(previousDate)}`);
+			} else {
+				timeAheadDate = new Date(previousDate.getMonth() + 1);	
+				console.log(`monthly timeAheadDate is ${timeAheadDate} from previousDate: ${JSON.stringify(previousDate)}`);
+			}
+		} else {
+			console.log(`If previousDate is null...`);
+			if (timeFrame == 'weekly') {
+				//This sets the initial value of timeAheadDate on the first iteration in a 
+				//WEEKLY context.
+				timeAheadDate = new Date(this.getDateFromString(xAxisData[0]).getTime() + (6 * 86400000));							
+				console.log(`weekly timeAheadDate is ${timeAheadDate} from xAxisData[0]: ${xAxisData[0]}`);
+			} else {
+				//This sets the initial value of timeAheadDate on the first iteration in a 
+				//MONTHLY context.
+				timeAheadDate = new Date(this.getDateFromString(xAxisData[0]).getMonth() + 1);
+				console.log(`monthly timeAheadDate is ${timeAheadDate} from xAxisData[0]: ${xAxisData[0]}`);	
+			}			
+		}
+
+		return timeAheadDate;
 	}
 
-	getMonthlyAverages(){
-		console.log('Entered getMonthlyAverages()');
+	getLastUniqueDateString(uniqueXTotalY){
+		//console.log(`uniqueXTotalY in getLastUniqueDateString() is:\n${JSON.stringify(uniqueXTotalY)}`);
+		var arrayOfUniqueDateKeys = Object.keys(uniqueXTotalY);
+		var lastUniqueDateIndex = arrayOfUniqueDateKeys.length - 1;
+		var lastUniqueDate = arrayOfUniqueDateKeys[lastUniqueDateIndex];
+
+		return lastUniqueDate;
 	}
+
+	getLastUniqueDate(uniqueXTotalY): Date{
+		var arrayOfUniqueDateKeys = Object.keys(uniqueXTotalY);
+		var lastUniqueDateIndex = arrayOfUniqueDateKeys.length - 1;
+		var lastUniqueDate = arrayOfUniqueDateKeys[lastUniqueDateIndex];
+		var previousDate = this.getDateFromString(lastUniqueDate);
+
+		return previousDate;
+	}
+
+	getDateFromString(date): Date{
+		console.log(`in getDateFromString(), date is: ${date}`);
+		var dateSectionArray = date.split('-');
+		var day = dateSectionArray[0];
+		var month = dateSectionArray[1];
+		var year = dateSectionArray[2];
+
+		return new Date(`${year}-${month}-${day}`);
+
+	}
+
+	extractUniqueDateSection(dateSection, datesArray): [string]{
+		var dateSectionArray;
+		var nextWeekDate: Date;
+		var nextMonthDate: Date;
+
+		switch (dateSection) {
+			case 'w':
+				for (const date in datesArray) {
+					if (datesArray.hasOwnProperty(date)) {
+						var sections = date.split('-');
+
+						
+					}
+				}
+				
+				break;
+
+			case 'm':
+				for (const date in datesArray) {
+					if (datesArray.hasOwnProperty(date)) {
+						var sections = date.split('-');
+						var month = sections[1];
+						
+					}
+				}
+				break;
+		
+			default:
+				console.log(`Unknown dateSection received in extractUniqueDateSection(): ${dateSection}`);
+				break;
+		}
+
+
+
+
+
+		return dateSectionArray;
+	}
+
+
+
 
 	//#endregion
 

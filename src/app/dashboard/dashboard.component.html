@@ -104,9 +104,9 @@
 					  Statistics
 					</button>
 					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					  <a class="dropdown-item" href="#" (click)="getDailyAverages()">Daily Average</a>
-					  <a class="dropdown-item" href="#" (click)="getWeeklyAverages()">Weekly Average</a>
-					  <a class="dropdown-item" href="#" (click)="getMonthlyAverages()">Monthly Average</a>
+					  <a class="dropdown-item" id="daily" href="#" (click)="getReadingAverages($event)">Daily Average</a>
+					  <a class="dropdown-item" id="weekly" href="#" (click)="getReadingAverages($event)">Weekly Average</a>
+					  <a class="dropdown-item" id="monthly" href="#" (click)="getReadingAverages($event)">Monthly Average</a>
 					</div>
 				  </div>
 			</div>

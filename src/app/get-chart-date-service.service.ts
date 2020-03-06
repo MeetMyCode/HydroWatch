@@ -24,10 +24,7 @@ export class GetDatePickerService {
   getDatePickerMinMaxDates(){
     //this.dataBaseService.getData(table: , date: , column: );
   }
-
-
-
-
+  
   setMinMaxDates(minDatePickerDate, maxDatePickerDate){
     //console.log(`minDatePickerDate is: ${minDatePickerDate} and maxDatePickerDate is: ${maxDatePickerDate}`);
     var newMaxDate = this.convertToNgbJsonDateFormat(maxDatePickerDate);
