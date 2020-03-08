@@ -70,7 +70,7 @@ function createServer(){
 
     process.stdout.write('\nreq.url prefix is: ' + urlPrefix + ', table is: ' + dbTables[table] + ', date is: ' + date + ' and column is ' + column);
 
-    if (urlPrefix == "/api/" && column == 'null') {
+    if (urlPrefix == "/api/" && date != 'null' && column == 'null') {
 
       process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
       await getDataFrom(table, date).then((dbData)=>{
@@ -82,7 +82,7 @@ function createServer(){
         res.end();
       });
 
-    }else if(urlPrefix == "/api/" && column != 'null'){
+    }else if(urlPrefix == "/api/" && date == 'null' && column != 'null'){
       process.stdout.write('\napi address for getMinMaxDatePickerDates() is: ' + req.url);
       await getMinMaxDatePickerDates(table, column).then((dbData)=>{
         //process.stdout.write('\ndbData is: ' + dbData);
@@ -92,6 +92,31 @@ function createServer(){
         process.stdout.write('\nhttp response data is: \n' + dbData);
         res.end();
       });
+
+    }else if(urlPrefix == "/api/" && date == 'all' && column != 'null'){
+
+      process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
+      await getDataFrom(table, date, column).then((dbData)=>{
+        //process.stdout.write('\ndbData is: ' + dbData);
+        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+        //var stringifyString = JSON.stringify(dbData);
+        res.write(dbData);
+        process.stdout.write('\nhttp response data is: \n' + dbData);
+        res.end();
+      });
+
+    }else if(date == 'null' && column == 'null'){
+
+      process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
+      await getDataFrom(table).then((dbData)=>{
+        //process.stdout.write('\ndbData is: ' + dbData);
+        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+        //var stringifyString = JSON.stringify(dbData);
+        res.write(dbData);
+        process.stdout.write('\nhttp response data is: \n' + dbData);
+        res.end();
+      });
+
     }else{
       var mimeType = path.extname(req.url);
 
@@ -192,27 +217,30 @@ function createServer(){
   }).listen(webServerPort);  
 }
 
-function getDataFrom(table, date=null) {  
+function getDataFrom(table, date='null', column='null') {  
   
     return new Promise((resolve, reject) => {
       process.stdout.write('\nTrying to get data from table: ' + table);
-      process.stdout.write(`\nIn getDataFrom(), table: ${table} and date: ${date}`);
+      process.stdout.write(`\nIn getDataFrom(), table: ${table} and date: ${date} and column is: ${column}`);
 
       //a query string is received as the incoming message. Execute it against the database.
       var result = '';
       var finalResult = '';
       var baseQueryString = 'SELECT * FROM';
-      var queryString;
+      var queryString = '';
 
-      if (table && date == 'null') {
+      if (date == 'null' && column == 'null') {
         //Select all records for a given table
         queryString = `${baseQueryString} ${dbTables[table]}`;
 
-      }else if(table && date != 'null'){
+      }else if(date != 'null' && column == 'null'){
         //Select all records from a given table for a given date.
         var formattedDate = formatDateStringForMySql(date);
         queryString = `${baseQueryString} ${dbTables[table]} WHERE date="${formattedDate}"`;
 
+      }else if(date == 'all' && column != 'null'){
+        //Select and entire column of data from a particular table.
+        queryString = `SELECT ${column} FROM ${dbTables[table]}`;      
       }else{
         process.stdout.write('\nDuff queryString in getDataFrom()!');
       }

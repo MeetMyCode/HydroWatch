@@ -15,7 +15,7 @@ export class DatabaseControllerService {
   	constructor(private myWebSocket: WebSocketService, private http: HttpClient) { }  
   
 	
-	async getData(table, date=null): Promise<any>{
+	async getData(table, date='null'): Promise<any>{
 		/*
 		make a GET request to the webServer with the passed in query string.
 		Once the data has beeen received, extract the x and y data, as well as the max value for the y-data
@@ -28,13 +28,12 @@ export class DatabaseControllerService {
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get(`\n${this.httpBaseAddress}/api/${table}/${date}/null`, {
+			tableData = this.http.get(`${this.httpBaseAddress}/api/${table}/${date}/null`, {
 				responseType: "text"
 			});
 
-			tableDataObservable = from(tableData);
 
-			resolve(tableDataObservable);
+			resolve(tableData);
 
 		});
 
@@ -49,17 +48,37 @@ export class DatabaseControllerService {
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get(`\n${this.httpBaseAddress}/api/${table}/null/${column}`, {
+			tableData = this.http.get(`${this.httpBaseAddress}/api/${table}/null/${column}`, {
 				responseType: "text"
 			});
 
-			tableDataObservable = from(tableData);
-
-			resolve(tableDataObservable);
+			resolve(tableData);
 
 		});
 	
 		
+	}
+
+	async getAllDatesFromTableForDatePicker(table, column): Promise<any>{
+		/*
+		make a GET request to the webServer with the passed in query string.
+		Once the data has beeen received, extract the x and y data, as well as the max value for the y-data
+		and put this into the returned object.
+		*/
+		console.log(`\nTable passed to getAllDatesFromTableForDatePicker() is: ${table} and column is: ${column}`);
+
+		var tableData: Observable<string>;
+		var tableDataObservable: Observable<string>;
+
+		return await new Promise((resolve, reject)=>{
+
+			tableData = this.http.get(`${this.httpBaseAddress}/api/${table}/all/${column}`, {
+				responseType: "text"
+			});
+
+			resolve(tableData);
+
+		});
 	}
 
 }

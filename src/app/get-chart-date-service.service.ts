@@ -10,21 +10,25 @@ import { NgbDate, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 })
 export class GetDatePickerService { 
 
-  private currentDate = new Date().toLocaleDateString();
-  private datePickerDate = this.currentDate.split('/').join('-');
+  //private currentDate = new Date().toLocaleDateString();
+  //private datePickerDate = this.currentDate.split('/').join('-');
+  private datePickerDate: string;
 
   datePickerDateSubject = new Subject<string>();
   minMaxDateSubject = new Subject<[NgbDateStruct, NgbDateStruct]>();
+  //currentXAxisData = new Subject<NgbDateStruct[]>();
+  currentXAxisData: NgbDateStruct[];
 
   private minDatePickerDate: string;
   private maxDatePickerDate: string;
+
 
   constructor(private dataBaseService: DatabaseControllerService) {}
 
   getDatePickerMinMaxDates(){
     //this.dataBaseService.getData(table: , date: , column: );
   }
-  
+
   setMinMaxDates(minDatePickerDate, maxDatePickerDate){
     //console.log(`minDatePickerDate is: ${minDatePickerDate} and maxDatePickerDate is: ${maxDatePickerDate}`);
     var newMaxDate = this.convertToNgbJsonDateFormat(maxDatePickerDate);
@@ -81,5 +85,12 @@ export class GetDatePickerService {
     this.minDatePickerDate = minDatePickerDate;
   }
 
+  setCurrentXAxisData(data){
+    this.currentXAxisData = data;
+  }
+
+  getCurrentXAxisData(){
+    return this.currentXAxisData;
+  }
 
 }

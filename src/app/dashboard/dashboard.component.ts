@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterContentInit, AfterContentChecked } from '@angular/core';
 import { WebSocketService } from '../web-socket.service';
 import { DatabaseControllerService } from '../database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 import { faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
 import { GetDatePickerService } from '../get-chart-date-service.service';
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 
 var Chart = require('chart.js');
@@ -237,6 +238,20 @@ export class DashboardComponent implements OnInit {
 	ngOnInit(){
 		this.getArduinoReading();
 
+		//Get a full list of dates, in order to disable all other dates in the date picker
+		//and also to set the initial date that will be retrieved by the datepicker component
+		//to set the initial date to be displayed on the datePicker button.
+		this.databaseService.getAllDatesFromTableForDatePicker(this.selectedChart, 'date').then((listOfDatesObservable)=>{
+			listOfDatesObservable.subscribe((listOfDates)=>{
+				console.log(`In ngAfterViewInit(), listOfDates is: ${listOfDates}`);
+				var prefixFreeString: string[] = JSON.parse(listOfDates.substring(2,));
+				console.log(`prefixFreeString is: ${prefixFreeString}`);
+				var arrayOfDateStructs = this.convertStringDateArrayToNgbDateStructDateArray(prefixFreeString);
+				var initialDateForDatePickerButton = this.convertNgbStructDateToString(arrayOfDateStructs[0]);
+				this.datePickerService.setDatePickerDate(initialDateForDatePickerButton);
+				this.datePickerService.setCurrentXAxisData(arrayOfDateStructs);
+			});
+		});		
 	}
 
 	ngAfterViewInit() {
@@ -247,8 +262,9 @@ export class DashboardComponent implements OnInit {
 			console.log('datePickerDateSubject notification received!');
 			this.myChart.destroy();
 			await this.initialiseGraph();
-		})
-	}
+		});
+
+	};
 
 	/*#region MAIN METHODS*/
 
@@ -307,180 +323,6 @@ export class DashboardComponent implements OnInit {
 
 	}
 
-	drawChart(dataArray){
-		console.log('Enter getDatabaseData().then()');
-
-		//graph variables
-		var xAxisData = new Array();
-		var yAxisData = new Array();
-		var xAxisTitle;
-		var yAxisTitle;
-		var dataSetLabel;
-
-		//console.log('graphFromDb is: ' + dataArray.toString());
-		xAxisData = dataArray[0];
-
-		//Sensor reading values for y-axis.
-		yAxisData = dataArray[1];	
-		//console.log('yAxisdata count is: ' + yAxisData.length);
-
-		this.setChartAreaWidth(yAxisData);
-
-		switch (this.selectedChart){			
-			//temp
-			case 0:
-				//populate graph with data here.
-				xAxisTitle = 'Time';
-				yAxisTitle = 'Temperature in Degrees Celsius';
-				dataSetLabel = 'Temp';
-				break;
-				
-			//ph	
-			case 1:
-				//populate graph with data here.
-				xAxisTitle = 'Time';
-				yAxisTitle = 'pH';
-				dataSetLabel = 'pH';
-				break;
-
-			//ec
-			case 2:
-				//populate graph with data here.
-				xAxisTitle = 'Time';
-				yAxisTitle = 'EC in mS/cm';
-				dataSetLabel = 'EC';
-				break;
-
-			//orp
-			case 3:
-				//populate graph with data here.
-				xAxisTitle = 'Time';
-				yAxisTitle = 'ORP in mV';
-				dataSetLabel = 'ORP';
-				break;
-		
-			default:	
-				console.log('Unknown Chart Requested - ' + this.selectedChart);			
-				break;
-		}
-
-		var rectangleSet = false;
-		var chartData = {
-			//labels: this.generateLabels(),
-			labels: xAxisData,
-			datasets: [{
-				labels: dataSetLabel,
-				//labels: dataSetLabel,
-				//data: this.generateData()
-				data: yAxisData,
-				fill: true,
-				borderColor: 'green'
-			}]
-		};
-		var chartOptions = {
-			maintainAspectRatio: false,
-			responsive: true,
-			tooltips: {
-				enabled: true
-			},
-			legend: {
-				display: false
-			},
-			scales: {
-				xAxes: [{
-					display: true,
-					scaleLabel: {
-						display: true,
-						labelString: xAxisTitle,
-						fontSize: 20,	
-						fontColor: 'black'						
-					},
-					ticks: {
-						beginAtZero: true,
-						min: 0,
-						fontSize: 12,
-						display: true,
-						fontColor: 'black'
-					}
-				}],
-				yAxes: [{
-					scaleLabel: {
-						display: true,
-						labelString: yAxisTitle,
-						fontSize: 20,	
-						fontColor: 'black'						
-					},
-					ticks: {
-						display: true,
-						min: 0,
-						max: parseInt(this.chartMaxValues[this.selectedChart]),
-						fontSize: 12,
-						beginAtZero: true,
-						fontColor: 'black'
-					}
-				}]
-			},
-			animation: {
-				duration: 1,
-				onComplete: function () {
-					if (!rectangleSet) {
-
-						var scale = window.devicePixelRatio;                       
-
-						//var sourceCanvas = myChart.chart.canvas;
-						var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
-
-						var copyWidth = myChart.scales['y-axis-0'].width - 10;
-						var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
-
-						var targetCtx = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
-
-						targetCtx.scale(scale, scale);
-						targetCtx.canvas.width = copyWidth * scale;
-						targetCtx.canvas.height = copyHeight * scale;
-
-						targetCtx.canvas.style.width = `${copyWidth}px`;
-						targetCtx.canvas.style.height = `${copyHeight}px`;
-						targetCtx.drawImage(sourceCanvas, 0, 0, copyWidth * scale, copyHeight * scale, 0, 0, copyWidth * scale, copyHeight * scale);
-
-						var sourceCtx = sourceCanvas.getContext('2d');
-
-						// Normalize coordinate system to use css pixels.
-
-						sourceCtx.clearRect(0, 0, copyWidth * scale, copyHeight * scale);
-						rectangleSet = true;
-					}
-				},
-				onProgress: function () {
-					if (rectangleSet === true) {
-						var copyWidth = myChart.scales['y-axis-0'].width;
-						var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
-
-						var sourceCtx = myChart.chart.canvas.getContext('2d');
-						sourceCtx.clearRect(0, 0, copyWidth, copyHeight);
-					}
-				},
-				onResize: function(){
-					var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
-					var targetCanvas = <HTMLCanvasElement>document.getElementById("axis-Test");
-					targetCanvas.height = sourceCanvas.height;
-				}
-			}
-		}	
-	
-		//Make sure to set the canvas width and height, otherwise a drawImage() method error is thrown 
-		//because a dimensonless canvas has been passed in to new Chart().
-		var myChartCanvas = <HTMLCanvasElement>document.getElementById('myChart');
-		myChartCanvas.width = innerWidth;
-		myChartCanvas.height = innerHeight;
-		var myChart = new Chart(myChartCanvas, {
-			type: 'line',
-			data: chartData,
-			options: chartOptions
-		});
-		this.myChart = myChart;
-	}
-
 	async getDatabaseData(): Promise<any[]>{
 		console.log('Enter getDatabaseData().');
 
@@ -488,6 +330,7 @@ export class DashboardComponent implements OnInit {
 
 			var dataArray = new Array();
 			var selectedDate = this.datePickerService.getDatePickerDate();
+			//var selectedDate = $('#dateSelector').val().toString();
 			//alert(`selectedDate is: ${selectedDate}`);
 
 			//Gets Chart data - either all or by given day.
@@ -502,7 +345,7 @@ export class DashboardComponent implements OnInit {
 				var arrayContainingJson = dataIncludingPrefix.substring(2,);
 				//console.log("\nArray containing JSON is: " + arrayContainingJson);
 				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
-				//console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
+				console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
 				console.log(`dbRowsAsJson.length is: ${arrayContainingJson.length}`);
 
 				var xAxisData = new Array();
@@ -514,6 +357,7 @@ export class DashboardComponent implements OnInit {
 							//time stamp arrives as format: "1980-02-27T08:23:00.000Z". Replace 'T' with a space and substring to
 							//"1980-02-27 08:23:00" format.
 							var time :string = (dbRowsAsJson[row]['time']);
+							var date :string = (dbRowsAsJson[row]['date']);
 							var reading :string = dbRowsAsJson[row][this.charts[this.selectedChart]];
 							//console.log('this.charts[this.selectedChart] is: ' + this.charts[this.selectedChart]);
 							//console.log('timeStamp is: ' + timeStamp);
@@ -698,29 +542,211 @@ export class DashboardComponent implements OnInit {
 
 	/*#region CHART SPECIFIC METHODS*/
 
-	chartZoomIn(event){
-		var buttonId = (<HTMLButtonElement>(event.target)).id;		
-		console.log('chart zoomed in!');
-		console.log(`original positive event target is: ${event.target}`);
+	drawChart(dataArray){
+		console.log('Enter getDatabaseData().then()');
 
-		this.tempPixelsPerDataPoint++;
+		//graph variables
+		var xAxisData = new Array();
+		var yAxisData = new Array();
+		var xAxisTitle;
+		var yAxisTitle;
+		var dataSetLabel;
+
+		//console.log('graphFromDb is: ' + dataArray.toString());
+		xAxisData = dataArray[0];
+
+		//Sensor reading values for y-axis.
+		yAxisData = dataArray[1];	
+		//console.log('yAxisdata count is: ' + yAxisData.length);
+
+		this.setChartAreaWidth(yAxisData);
+
+		switch (this.selectedChart){			
+			//temp
+			case 0:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'Temperature in Degrees Celsius';
+				dataSetLabel = 'Temp';
+				break;
+				
+			//ph	
+			case 1:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'pH';
+				dataSetLabel = 'pH';
+				break;
+
+			//ec
+			case 2:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'EC in mS/cm';
+				dataSetLabel = 'EC';
+				break;
+
+			//orp
+			case 3:
+				//populate graph with data here.
+				xAxisTitle = 'Time';
+				yAxisTitle = 'ORP in mV';
+				dataSetLabel = 'ORP';
+				break;
+		
+			default:	
+				console.log('Unknown Chart Requested - ' + this.selectedChart);			
+				break;
+		}
+
+		var rectangleSet = false;
+		var chartData = {
+			//labels: this.generateLabels(),
+			labels: xAxisData,
+			datasets: [{
+				labels: dataSetLabel,
+				//labels: dataSetLabel,
+				//data: this.generateData()
+				data: yAxisData,
+				fill: true,
+				borderColor: 'green'
+			}]
+		};
+		var chartOptions = {
+			maintainAspectRatio: false,
+			responsive: true,
+			tooltips: {
+				enabled: true
+			},
+			legend: {
+				display: false
+			},
+			scales: {
+				xAxes: [{
+					display: true,
+					scaleLabel: {
+						display: true,
+						labelString: xAxisTitle,
+						fontSize: 20,	
+						fontColor: 'black'						
+					},
+					ticks: {
+						beginAtZero: true,
+						min: 0,
+						fontSize: 12,
+						display: true,
+						fontColor: 'black'
+					}
+				}],
+				yAxes: [{
+					scaleLabel: {
+						display: true,
+						labelString: yAxisTitle,
+						fontSize: 20,	
+						fontColor: 'black'						
+					},
+					ticks: {
+						display: true,
+						min: 0,
+						max: parseInt(this.chartMaxValues[this.selectedChart]),
+						fontSize: 12,
+						beginAtZero: true,
+						fontColor: 'black'
+					}
+				}]
+			},
+			animation: {
+				duration: 1,
+				onComplete: function () {
+					if (!rectangleSet) {
+
+						var scale = window.devicePixelRatio;                       
+
+						//var sourceCanvas = myChart.chart.canvas;
+						var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+
+						var copyWidth = myChart.scales['y-axis-0'].width - 10;
+						var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
+
+						var targetCtx = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+
+						targetCtx.scale(scale, scale);
+						targetCtx.canvas.width = copyWidth * scale;
+						targetCtx.canvas.height = copyHeight * scale;
+
+						targetCtx.canvas.style.width = `${copyWidth}px`;
+						targetCtx.canvas.style.height = `${copyHeight}px`;
+						targetCtx.drawImage(sourceCanvas, 0, 0, copyWidth * scale, copyHeight * scale, 0, 0, copyWidth * scale, copyHeight * scale);
+
+						var sourceCtx = sourceCanvas.getContext('2d');
+
+						// Normalize coordinate system to use css pixels.
+
+						sourceCtx.clearRect(0, 0, copyWidth * scale, copyHeight * scale);
+						rectangleSet = true;
+					}
+				},
+				onProgress: function () {
+					if (rectangleSet === true) {
+						var copyWidth = myChart.scales['y-axis-0'].width;
+						var copyHeight = myChart.scales['y-axis-0'].height + myChart.scales['y-axis-0'].top + 10;
+
+						var sourceCtx = myChart.chart.canvas.getContext('2d');
+						sourceCtx.clearRect(0, 0, copyWidth, copyHeight);
+					}
+				},
+				onResize: function(){
+					var sourceCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+					var targetCanvas = <HTMLCanvasElement>document.getElementById("axis-Test");
+					targetCanvas.height = sourceCanvas.height;
+
+					var scale = window.devicePixelRatio;                       
+
+					var copyWidth = myChart.scales['y-axis-0'].width - 10;
+					var targetCtx = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
+
+
+
+				}
+			}
+		}	
+	
+		//Make sure to set the canvas width and height, otherwise a drawImage() method error is thrown 
+		//because a dimensonless canvas has been passed in to new Chart().
+		var myChartCanvas = <HTMLCanvasElement>document.getElementById('myChart');
+		myChartCanvas.width = innerWidth;
+		myChartCanvas.height = innerHeight;
+		var myChart = new Chart(myChartCanvas, {
+			type: 'line',
+			data: chartData,
+			options: chartOptions
+		});
+		this.myChart = myChart;
+	}
+
+	chartZoom(event){
+		var buttonId = (<HTMLButtonElement>(event.target)).id;	
+		
+		switch (buttonId) {
+			case 'magMinusBtn':
+				console.log('chart zoomed out!');
+				//console.log(`original negative event target is: ${event.target}`);
+				this.tempPixelsPerDataPoint--;
+			break;
+		
+			case 'magPlusBtn':
+				console.log('chart zoomed in!');
+				//console.log(`original positive event target is: ${event.target}`);
+				this.tempPixelsPerDataPoint++;
+			break;
+
+			default:
+				console.log(`Invalid buttonId in chartZoom(): ${buttonId}`);
+			break;
+		}
 		var newChartWidth = this.calcNewChartWidth(buttonId);
 		this.myChart.canvas.parentNode.style.width = newChartWidth;
 		//console.log(`New Chart Width: ${newChartWidth}`);	
-
-		//Equalise chart heights to prevent the axis title overlapping incorrectly.
-		var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
-		axisChart.canvas.height = this.myChart.canvas.height; 	
-	}
-
-	chartZoomOut(event){
-		var buttonId = (<HTMLButtonElement>(event.target)).id;		
-		console.log('chart zoomed out!');
-		console.log(`original negative event target is: ${event.target}`);
-		this.tempPixelsPerDataPoint--;
-		var newChartWidth = this.calcNewChartWidth(buttonId);
-		this.myChart.canvas.parentNode.style.width = newChartWidth;
-		//console.log(`New Chart Width: ${newChartWidth}`);
 
 		//Equalise chart heights to prevent the axis title overlapping incorrectly.
 		var axisChart = (<HTMLCanvasElement>document.getElementById("axis-Test")).getContext("2d");
@@ -876,6 +902,61 @@ export class DashboardComponent implements OnInit {
 
 	
 	/*#region UTILITY METHODS*/
+
+	convertStringDateArrayToNgbDateStructDateArray(dateStringArray: string[]): NgbDateStruct[]{
+
+		console.log(`dateStringArray entry count: ${dateStringArray.length}`);
+		console.log(`dateStringArray[0] is: ${JSON.stringify(dateStringArray[0])}`);
+		var dateStructArray = new Array<NgbDateStruct>();
+
+		var dateArray = new Array<string>();
+		dateStringArray.forEach((date)=>{
+			var dateItem = date['date'];
+			dateArray.push(dateItem);
+		});
+		var dateSet = new Set(dateArray);
+
+		dateSet.forEach(date => {
+			console.log(`date is: ${date}`);
+			var dateItemArray = date.split('-');
+			var year = parseInt(dateItemArray[0]);
+			var month = parseInt(dateItemArray[1]);
+			var day = parseInt(dateItemArray[2]);
+
+			var structDate = {
+				year: year,
+				month: month,
+				day: day
+			};
+
+			dateStructArray.push(structDate);
+		});
+
+
+		return dateStructArray;
+	};
+
+	convertNgbStructDateToString(date: NgbDateStruct): string{
+		//console.log(`In convertNgbStructDateToString(), date is: ${JSON.stringify(date)}`);
+
+		var dateString;
+
+		var year = date.year.toString();
+		var month = date.month.toString();
+		var day = date.day.toString();
+
+		if (date.month < 10) {
+			month = `0${date.month}`;
+		}
+
+		if (date.day < 10) {
+			day = `0${date.day}`;
+		}
+		//console.log(`In convertNgbStructDateToString(), dateString is: ${dateString}`);
+		dateString = `${day}-${month}-${year}`;
+
+		return dateString;
+	}
 
 	extractShortDateFromLongDate(longDateString){
 		//console.log('dateString is: ' + dateString);
@@ -1064,7 +1145,7 @@ export class DashboardComponent implements OnInit {
 			dbResultObserver.subscribe((data)=>{
 
 				//console.log('\nReturned data in getDatabaseData() is: ' + data);
-				var dataIncludingPrefix = JSON.parse(data);
+				var dataIncludingPrefix = data;
 				//console.log('dataIncludingPrefix is: ' + dataIncludingPrefix);
 				var prefix = dataIncludingPrefix.substring(0,2);
 				//console.log("\nReading prefix from server is: " + prefix);
@@ -1072,7 +1153,7 @@ export class DashboardComponent implements OnInit {
 				//console.log("\nArray containing JSON is: " + arrayContainingJson);
 				var dbRowsAsJson:JSON = JSON.parse(arrayContainingJson);
 				//console.log("\ndbRows as json are: " + JSON.stringify(dbRowsAsJson));
-				console.log(`dbRowsAsJson.length is: ${arrayContainingJson.length}`);
+				//console.log(`dbRowsAsJson.length is: ${arrayContainingJson.length}`);
 
 				var xAxisData = new Array();
 				var yAxisData = new Array();
