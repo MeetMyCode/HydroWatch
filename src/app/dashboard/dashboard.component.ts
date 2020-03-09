@@ -243,9 +243,9 @@ export class DashboardComponent implements OnInit {
 		//to set the initial date to be displayed on the datePicker button.
 		this.databaseService.getAllDatesFromTableForDatePicker(this.selectedChart, 'date').then((listOfDatesObservable)=>{
 			listOfDatesObservable.subscribe((listOfDates)=>{
-				console.log(`In ngAfterViewInit(), listOfDates is: ${listOfDates}`);
+				//console.log(`In ngAfterViewInit(), listOfDates is: ${listOfDates}`);
 				var prefixFreeString: string[] = JSON.parse(listOfDates.substring(2,));
-				console.log(`prefixFreeString is: ${prefixFreeString}`);
+				//console.log(`prefixFreeString is: ${prefixFreeString}`);
 				var arrayOfDateStructs = this.convertStringDateArrayToNgbDateStructDateArray(prefixFreeString);
 				var initialDateForDatePickerButton = this.convertNgbStructDateToString(arrayOfDateStructs[0]);
 				this.datePickerService.setDatePickerDate(initialDateForDatePickerButton);
@@ -479,6 +479,7 @@ export class DashboardComponent implements OnInit {
 					//Timer interval value is received as a string in milliseconds so /1000 to convert to seconds.
 					case '0':
 						this.readingEvery = parseInt(dataFromServer.substring(1, ))/1000;
+						console.log(`Timer interval prefix received: ${this.readingEvery}s`);
 						this.startTimer();
 						break;
 
@@ -917,7 +918,7 @@ export class DashboardComponent implements OnInit {
 		var dateSet = new Set(dateArray);
 
 		dateSet.forEach(date => {
-			console.log(`date is: ${date}`);
+			//console.log(`date is: ${date}`);
 			var dateItemArray = date.split('-');
 			var year = parseInt(dateItemArray[0]);
 			var month = parseInt(dateItemArray[1]);
@@ -984,7 +985,7 @@ export class DashboardComponent implements OnInit {
 	}
 	
 	startTimer(){
-
+		console.log(`startTimer() started!`);
 		if (this.readingEvery >= 0) {
 			this.timeTillReading = this.readingEvery
 			setInterval(()=>{

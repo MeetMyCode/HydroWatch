@@ -2,7 +2,7 @@
 
 const SerialPort = require('serialport')
 const mysql = require('mysql');
-const WebSocket = require('ws');
+const MyWebSocket = require('ws');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
@@ -33,7 +33,7 @@ var dbConnectionPool = mysql.createPool({
 createServer(); 
 
 //CREATE WEBSOCKET AND SERIALPORT CONNECTIONS/LISTENERS
-const wss = new WebSocket.Server({ 
+const wss = new MyWebSocket.Server({ 
   port: 12345
 });
 
@@ -410,7 +410,7 @@ function filterPrefixFromArduinoReading(dataFromArduino, poolConnection){
 
   switch (prefix) {
     case "t":
-      temp = dataFromArduino.substring(1, );
+      var temp = dataFromArduino.substring(1, );
       sentoDbTable(prefix, temp, poolConnection);
       dbConnectionPool.releaseConnection(poolConnection)
       break;
@@ -444,12 +444,16 @@ function sentoDbTable(readingPrefix, readingCategory, poolConnection){
 
     //process.stdout.write('\ndate.now.toLocalString is: ' + new Date().toISOString());
 
-    var query = 'INSERT INTO ' + dbTables2[readingPrefix] + '(timestamp, ' + dbColumnsInUse[readingPrefix] + ') VALUES (?,?)';
-    var timeStamp = formatSIODateTimeToSQLDateTime(new Date().toISOString());
+    var query = 'INSERT INTO ' + dbTables2[readingPrefix] + ' (date, time, ' + dbColumnsInUse[readingPrefix] + ') VALUES (?,?,?)';
+    var timeStamp = formatISODateTimeToSQLDateTime(new Date().toISOString());
+    var dateAndTimeSections = extractSqlDateAndTimeStringsFromDateTime(timeStamp);
+    var date = dateAndTimeSections[0];
+    var time = dateAndTimeSections[1];
   
     poolConnection.query(
       query.toString(),
-      [timeStamp,
+      [date,
+      time,
       readingCategory], 
       function (error, results, fields) {
   
@@ -469,7 +473,7 @@ function sentoDbTable(readingPrefix, readingCategory, poolConnection){
 
 }
 
-function formatSIODateTimeToSQLDateTime(stringToFormat){
+function formatISODateTimeToSQLDateTime(stringToFormat){
 
   //process.stdout.write('\nISO Date String to format is: ' + stringToFormat.toString());
 
@@ -481,3 +485,22 @@ function formatSIODateTimeToSQLDateTime(stringToFormat){
 }
 
 /*#endregion*/
+
+/*#region  UTILITY METHODS */
+function extractSqlDateAndTimeStringsFromDateTime(dateTime){
+  var dateAndTime = new Array();
+  process.stdout.write(`dateAndTimeString is: ${dateTime}`);
+
+  var date = dateTime.substring(0,10);
+  var time = dateTime.substring(11,19);
+
+  dateAndTime.push(date);
+  dateAndTime.push(time);
+
+  process.stdout.write(`\nIn extractSqlDateAndTimeStringsFromDateTime(), dateString is: ${date}`);
+  process.stdout.write(`\nIn extractSqlDateAndTimeStringsFromDateTime(), timeString is: ${time}`);  
+
+  return dateAndTime;
+}
+
+/*//#endregion */
