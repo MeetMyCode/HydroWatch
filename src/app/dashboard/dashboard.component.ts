@@ -236,6 +236,9 @@ export class DashboardComponent implements OnInit {
 		private datePickerService: GetDatePickerService) {	}
 
 	ngOnInit(){
+		//Request the timer interval value (in seconds).
+		this.myWebSocketService.getSocket().next('timerInterval');
+
 		this.getArduinoReading();
 
 		//Get a full list of dates, in order to disable all other dates in the date picker
@@ -251,7 +254,8 @@ export class DashboardComponent implements OnInit {
 				this.datePickerService.setDatePickerDate(initialDateForDatePickerButton);
 				this.datePickerService.setCurrentXAxisData(arrayOfDateStructs);
 			});
-		});		
+		});	
+		
 	}
 
 	ngAfterViewInit() {
@@ -478,6 +482,9 @@ export class DashboardComponent implements OnInit {
 					//that serves to auto-update the timer for informing the user when the next reading will be.
 					//Timer interval value is received as a string in milliseconds so /1000 to convert to seconds.
 					case '0':
+						console.log(`timerInterval Data is: ${dataFromServer}`);
+						//var stringData = JSON.parse(dataFromServer);
+						//console.log(`After parsing, string data from server is: ${stringData}`);
 						this.readingEvery = parseInt(dataFromServer.substring(1, ))/1000;
 						console.log(`Timer interval prefix received: ${this.readingEvery}s`);
 						this.startTimer();

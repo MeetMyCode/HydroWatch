@@ -1,14 +1,15 @@
 /*#region CONSTANTS/PROPERTIES/VARIABLES ETC*/
-
 const SerialPort = require('serialport')
 const mysql = require('mysql');
 const MyWebSocket = require('ws');
-const http = require('http');
+const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const webServerPort = 8080;
-const dashboardPageAddress = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch/index.html';
-const distDir = '/Users/rosshiggins/Desktop/Software Development/Angular Development/HydroWatch/HydroWatch/dist/HydroWatch';
+const webSocketPort = 12345;
+const webServerHostname = '192.168.1.68';
+const dashboardPageAddress = '../index.html';
+const distDir = '../assets/Images';
 
 const dbTables2 = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const dbTables = {0:"temperature", 1:"ph", 2:"ec", 3:"orp"};
@@ -16,6 +17,10 @@ const dbTables = {0:"temperature", 1:"ph", 2:"ec", 3:"orp"};
 const dbColumnsInUse = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const prefixes = {0:"tt",1:"ph",2:"ec",3:"or",};
 const Readline = SerialPort.parsers.Readline;
+
+//Stores the interval value in seconds for the timer used to inform the user 
+//when the next reading will take place.
+var timerInterval; 
 
 const arduinoPortAddress = '/dev/ttyACM0';
 
@@ -32,33 +37,59 @@ var dbConnectionPool = mysql.createPool({
 //CREATE THE WEBSERVER
 createServer(); 
 
-//CREATE WEBSOCKET AND SERIALPORT CONNECTIONS/LISTENERS
-const wss = new MyWebSocket.Server({ 
-  port: 12345
-});
+//CREATE WEBSOCKET AND CONNECTIONS/LISTENERS
+createWebSocket();
 
 //CREATE SERIALPORT CONNECTION
 var port = new SerialPort('/dev/tty.usbmodem14201', {
   baudRate: 9600,
 });
- 
-//WEB SOCKET EVENT LISTENER
-wss.on('connection', function connection(serverSocket) {
 
-  // IF THE SERVER GETS A MESSAGE FROM THE CLIENT..
-  serverSocket.on('message', function incoming(queryString) {
+function createWebSocket(){
+  const server = https.createServer({
+    cert: fs.readFileSync('../../../ssl/server.crt'),
+    key: fs.readFileSync('../../../ssl/server.key'),
+  });
+  
+  const wss = new MyWebSocket.Server({ server });
+  
+  server.listen(webSocketPort,webServerHostname);
+
+  //WEB SOCKET EVENT LISTENER
+  wss.on('connection', function connection(serverSocket) {
+
+    // IF THE SERVER GETS A MESSAGE FROM THE CLIENT..
+    serverSocket.on('message', function incoming(query) {
+      var stringQuery = JSON.parse(query);
+
+      switch (stringQuery) {
+        case 'timerInterval':
+          serverSocket.send(`0${timerInterval}`); 
+          break;
+      
+        default:
+          process.stdout.write(`Unknown query received: ${query}`);
+          break;
+      }
+    });
+
+    process.stdout.write('\nConnected to Socket!');
+
+    //GET READINGS FROM ARDUINO & PASS THEM TO DATABASE AND WEB PAGE
+    getSensorReadings(serverSocket);
+
   });
 
-  process.stdout.write('\nConnected to Socket!');
-
-  //GET READINGS FROM ARDUINO & PASS THEM TO DATABASE AND WEB PAGE
-  getSensorReadings(serverSocket);
-
-});
-
+}
 
 function createServer(){
-  http.createServer(async function (req, res) {
+
+  var options = {
+    cert: fs.readFileSync('../../../ssl/server.crt'),
+    key: fs.readFileSync('../../../ssl/server.key')
+  }
+
+  https.createServer(options, async function (req, res) {
 
     var urlPrefix = req.url.substring(0,5);
     var tableAndDateSections = req.url.substring(5,).split('/');
@@ -128,12 +159,16 @@ function createServer(){
       switch (mimeType) {
         case '/':
           //return the dashboard page
+          process.stdout.write('Fetching index.html');
+
           fs.readFile(dashboardPageAddress, function(err,data){
+            process.stdout.write('Fetching index.html');
 
             if (!err) {
               res.writeHead(200, {'Content-Type': 'text/html'});
               res.write(data, 'utf-8');
               res.end();
+              process.stdout.write('index.html sent!');
             }else{
               process.stdout.write('\nError loading index.html: ' + err);
             }
@@ -214,7 +249,9 @@ function createServer(){
 
     }
 
-  }).listen(webServerPort);  
+  }).listen(webServerPort);
+
+
 }
 
 function getDataFrom(table, date='null', column='null') {  
@@ -361,7 +398,7 @@ function getSensorReadings(socket){
   /*
     >>function getSensorReadings(socket)<<
   This function takes a web socket as an argument. 
-  Data is received from the seriaport connection to the arduino which is then
+  Data is received from the serialport connection to the arduino which is then
   filtered/formatted for before sending to the corresponding database tables
   and also forwarded on the dashbpoard web page via the web socket.
   */
@@ -382,21 +419,31 @@ function getSensorReadings(socket){
   parser.on('data', function (data) {
     //process.stdout.write("\n" + data);
 
-    //GET A CONNECTION FROM THE POOL AND CONNECT TO DATABASE  
-    dbConnectionPool.getConnection((err, poolConnection) => {
+    //Check for timer interval (prefix = 0) and store in var timerInterval.
+    var prefix = data[0];
+    if (prefix == '0') {
+      process.stdout.write(`\nprefix is 0`);
+      var reading = data.toString().substring(1,);
+      timerInterval = parseFloat(reading);
+      process.stdout.write(`timerInterval is: ${timerInterval/1000} seconds.`);
+    }else{
+      //GET A CONNECTION FROM THE POOL, CONNECT TO DATABASE & SEND DATA TO DATABASE. 
+      dbConnectionPool.getConnection((err, poolConnection) => {
 
-      if (err) {
-        process.stdout.write('\nError getting pool connection: ' + err);
-      }else{
-        process.stdout.write('\nDatabase Connection from Pool established!');
-        
-        //FILTER DATA BEFORE SENDING TO DATABASE
-        filterPrefixFromArduinoReading(data, poolConnection);
+        if (err) {
+          process.stdout.write('\nError getting pool connection: ' + err);
+        }else{
+          process.stdout.write('\nDatabase Connection from Pool established!');
+          
+          //FILTER DATA BEFORE SENDING TO DATABASE
+          filterPrefixFromArduinoReading(data, poolConnection);        
+        }
+      });
 
-        //SEND DATA TO WEB DASHBOARD
-        socket.send(data);
-      }
-    });
+      //SEND DATA TO WEB DASHBOARD
+      socket.send(data);
+    }
+
   });
 
 }
@@ -406,38 +453,44 @@ function getSensorReadings(socket){
 function filterPrefixFromArduinoReading(dataFromArduino, poolConnection){
 
   var prefix = dataFromArduino[0].toLowerCase();
-  console.log("\nreading prefix is: " + prefix);
+  process.stdout.write("\nreading prefix is: " + prefix);
 
-  switch (prefix) {
-    case "t":
-      var temp = dataFromArduino.substring(1, );
-      sentoDbTable(prefix, temp, poolConnection);
-      dbConnectionPool.releaseConnection(poolConnection)
-      break;
+  //Check for '0' to ignore initial flag from arduino that sends the timer interval
+  if (prefix != '0') {
+    switch (prefix) {
+      case "t":
+        var temp = dataFromArduino.substring(1, );
+        sentoDbTable(prefix, temp, poolConnection);
+        dbConnectionPool.releaseConnection(poolConnection)
+        break;
 
-    case "p":
-      var ph = dataFromArduino.substring(1, );
-      sentoDbTable(prefix, ph, poolConnection);
-      dbConnectionPool.releaseConnection(poolConnection);
-      break;
+      case "p":
+        var ph = dataFromArduino.substring(1, );
+        sentoDbTable(prefix, ph, poolConnection);
+        dbConnectionPool.releaseConnection(poolConnection);
+        break;
 
-    case "e":
-      var ec = dataFromArduino.substring(1, );
-      sentoDbTable(prefix,ec, poolConnection);
-      dbConnectionPool.releaseConnection(poolConnection);
-      break;
+      case "e":
+        var ec = dataFromArduino.substring(1, );
+        sentoDbTable(prefix,ec, poolConnection);
+        dbConnectionPool.releaseConnection(poolConnection);
+        break;
 
-    case "o":
-      var orp = dataFromArduino.substring(1, );
-      sentoDbTable(prefix,orp, poolConnection);
-      dbConnectionPool.releaseConnection(poolConnection);
-      break;	
+      case "o":
+        var orp = dataFromArduino.substring(1, );
+        sentoDbTable(prefix,orp, poolConnection);
+        dbConnectionPool.releaseConnection(poolConnection);
+        break;	
 
-    default:
-      console.log('\nError - Unknown Prefix received in function: addReadingToDataBase(dataFromArduino)');
-      dbConnectionPool.releaseConnection(poolConnection);
-      break;
+      default:
+        process.stdout.write('\nError - Unknown Prefix received in function: addReadingToDataBase(dataFromArduino)');
+        process.stdout.write('\nPrefix:' + prefix);
+        dbConnectionPool.releaseConnection(poolConnection);
+        break;
+    }    
   }
+
+
 }
 
 function sentoDbTable(readingPrefix, readingCategory, poolConnection){

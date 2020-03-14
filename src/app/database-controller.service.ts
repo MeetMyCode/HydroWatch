@@ -9,10 +9,13 @@ import { HttpClient } from '@angular/common/http';
 })
 export class DatabaseControllerService {
 
-	//private queryResult :string;
-	private httpBaseAddress = 'http://localhost:8080';
+	publicIp = '213.31.118.1';
+	localhost = 'localhost';
 
-  	constructor(private myWebSocket: WebSocketService, private http: HttpClient) { }  
+	//private queryResult :string;
+	private httpsBaseAddress = `https://${this.publicIp}:443`;
+
+  	constructor(private myWebSocket: WebSocketService, private https: HttpClient) { }  
   
 	
 	async getData(table, date='null'): Promise<any>{
@@ -28,7 +31,9 @@ export class DatabaseControllerService {
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get(`${this.httpBaseAddress}/api/${table}/${date}/null`, {
+			var url = `${this.httpsBaseAddress}/api/${table}/${date}/null`;
+
+			tableData = this.https.get(url, {
 				responseType: "text"
 			});
 
@@ -48,7 +53,9 @@ export class DatabaseControllerService {
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get(`${this.httpBaseAddress}/api/${table}/null/${column}`, {
+			var url = `${this.httpsBaseAddress}/api/${table}/null/${column}`;
+
+			tableData = this.https.get(url, {
 				responseType: "text"
 			});
 
@@ -72,7 +79,9 @@ export class DatabaseControllerService {
 
 		return await new Promise((resolve, reject)=>{
 
-			tableData = this.http.get(`${this.httpBaseAddress}/api/${table}/all/${column}`, {
+			var url = `${this.httpsBaseAddress}/api/${table}/all/${column}`;
+
+			tableData =  this.https.get(url, {
 				responseType: "text"
 			});
 

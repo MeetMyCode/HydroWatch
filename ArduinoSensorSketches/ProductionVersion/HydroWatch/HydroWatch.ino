@@ -30,12 +30,9 @@ int outputValue = 0; //VALUE OUTPUT TO THE PWM (ANALOG OUT)
 //********************************PH SENSOR CONSTANTS/PROPERTIES********************************
 
 #define SensorPin A2            //pH meter Analog output to Arduino Analog Input 0
-#define Offset 0.00            //deviation compensate
-#define samplingInterval 20
-#define printInterval 800
-#define ArrayLenth  40    //times of collection
-int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
-int pHArrayIndex=0;
+unsigned long int avgValue;  //Store the average value of the sensor feedback
+float b;
+int buf[10],temp;
 
 //********************************SETUP CONSTANTS/PROPERTIES********************************
 
@@ -79,27 +76,35 @@ void loop() {
 }
 
 void GetPhReading(){
-
-  static unsigned long samplingTime = millis();
-  static unsigned long printTime = millis();
-  static float pHValue, voltage;
-   
-  if(millis()-samplingTime > samplingInterval)
-  {
-      pHArray[pHArrayIndex++]=analogRead(SensorPin);
-      if(pHArrayIndex==ArrayLenth)
-        pHArrayIndex=0;
-      voltage = avergearray(pHArray, ArrayLenth)*5.0/1024;
-      pHValue = 3.5*voltage+Offset;
-      samplingTime=millis();
+  for(int i=0;i<10;i++)       //Get 10 sample value from the sensor for smooth the value
+  { 
+    buf[i]=analogRead(SensorPin);
+    delay(10);
   }
-  if(millis() - printTime > printInterval)   //Every 800 milliseconds, print a numerical
+  for(int i=0;i<9;i++)        //sort the analog from small to large
   {
-    String phPrefix = "p";
-    Serial.print(phPrefix + String(pHValue) + "\r\n");
-    printTime=millis();
+    for(int j=i+1;j<10;j++)
+    {
+      if(buf[i]>buf[j])
+      {
+        temp=buf[i];
+        buf[i]=buf[j];
+        buf[j]=temp;
+      }
+    }
   }
+  avgValue=0;
+  for(int i=2;i<8;i++)                      //take the average value of 6 center sample
+    avgValue+=buf[i];
+  float phValue=(float)avgValue*5.0/1024/6; //convert the analog into millivolt
+  phValue=3.5*phValue;                      //convert the millivolt into pH value
+  
+  //PREPEND 'P' (P = PH, O=ORP, E=EC, T=TEMP) FOR FILTERING OUT AT FRONTEND
+  String pHPrefix = "p";
+  String tempString = String(phValue); //pH is of type float - convert to string here.  
+  String stringToSend = pHPrefix + tempString + "\r\n";
 
+  Serial.println(stringToSend);
 }
 
 void GetEcReading(){
@@ -150,44 +155,4 @@ void GetTemperature(){
     Serial.println("Error: Could not read temperature data");
   }
 
-}
-
-double avergearray(int* arr, int number){
-  int i;
-  int max,min;
-  double avg;
-  long amount=0;
-  if(number<=0){
-    Serial.println("Error number for the array to avraging!/n");
-    return 0;
-  }
-  if(number<5){   //less than 5, calculated directly statistics
-    for(i=0;i<number;i++){
-      amount+=arr[i];
-    }
-    avg = amount/number;
-    return avg;
-  }else{
-    if(arr[0]<arr[1]){
-      min = arr[0];max=arr[1];
-    }
-    else{
-      min=arr[1];max=arr[0];
-    }
-    for(i=2;i<number;i++){
-      if(arr[i]<min){
-        amount+=min;        //arr<min
-        min=arr[i];
-      }else {
-        if(arr[i]>max){
-          amount+=max;    //arr>max
-          max=arr[i];
-        }else{
-          amount+=arr[i]; //min<=arr<=max
-        }
-      }//if
-    }//for
-    avg = (double)amount/(number-2);
-  }//if
-  return avg;
 }
