@@ -6,8 +6,10 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const webServerPort = 8080;
+const sslPort = 443;
 const webSocketPort = 12345;
-const webServerHostname = '192.168.1.68';
+//const webServerHostname = '192.168.1.66';
+const webServerHostname = 'localhost';
 const dashboardPageAddress = '../index.html';
 const distDir = '../assets/Images';
 
@@ -90,168 +92,248 @@ function createServer(){
   }
 
   https.createServer(options, async function (req, res) {
+    process.stdout.write(`\nreq.url is: ${req.url}`);
+    var loginUrl = '/login';
 
-    var urlPrefix = req.url.substring(0,5);
-    var tableAndDateSections = req.url.substring(5,).split('/');
-    process.stdout.write(`\ntableAndDateSections is: ${tableAndDateSections}`);
+    if (loginUrl == req.url && req.method == 'POST') {
 
-    var table = tableAndDateSections[0];
-    var date = tableAndDateSections[1];
-    var column = tableAndDateSections[2];
+      var loginData = '';
+      // we can access HTTP headers
+      req.on('data', chunk => {
+        loginData += chunk.toString();
+      })
+      req.on('end', async () => {
 
-    process.stdout.write('\nreq.url prefix is: ' + urlPrefix + ', table is: ' + dbTables[table] + ', date is: ' + date + ' and column is ' + column);
+        process.stdout.write(`\nIn createServer(), login data is ${loginData}`);
+        //var loginData = data.split(',');
+        var username = (JSON.parse(loginData))['uname'];
+        var password = (JSON.parse(loginData))['password'];
+        var dbTable = 'users';
 
-    if (urlPrefix == "/api/" && date != 'null' && column == 'null') {
+        process.stdout.write(`\nIn createServer(), username is: ${username} and password is: ${password}`);
 
-      process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
-      await getDataFrom(table, date).then((dbData)=>{
-        //process.stdout.write('\ndbData is: ' + dbData);
-        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-        var stringifyString = JSON.stringify(dbData);
-        res.write(stringifyString);
-        process.stdout.write('\nhttp response data is: \n' + dbData);
-        res.end();
-      });
+        await checkUserLogin(dbTable, username, password).then((isSuccessfulLogin)=>{
+          process.stdout.write('\nisSuccessfulLogin is: ' + isSuccessfulLogin);
+          res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+          var stringifyString = JSON.stringify(isSuccessfulLogin);
+          res.write(stringifyString);
+          process.stdout.write('\nhttp response data is: \n' + isSuccessfulLogin);
+          res.end();
+        });
+      })
 
-    }else if(urlPrefix == "/api/" && date == 'null' && column != 'null'){
-      process.stdout.write('\napi address for getMinMaxDatePickerDates() is: ' + req.url);
-      await getMinMaxDatePickerDates(table, column).then((dbData)=>{
-        //process.stdout.write('\ndbData is: ' + dbData);
-        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-        var stringifyString = JSON.stringify(dbData);
-        res.write(stringifyString);
-        process.stdout.write('\nhttp response data is: \n' + dbData);
-        res.end();
-      });
+    } else {
+      var urlPrefix = req.url.substring(0,5);
+      var tableAndDateSections = req.url.substring(5,).split('/');
+      process.stdout.write(`\ntableAndDateSections is: ${tableAndDateSections}`);
 
-    }else if(urlPrefix == "/api/" && date == 'all' && column != 'null'){
+      var table = tableAndDateSections[0];
+      var date = tableAndDateSections[1];
+      var column = tableAndDateSections[2];
 
-      process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
-      await getDataFrom(table, date, column).then((dbData)=>{
-        //process.stdout.write('\ndbData is: ' + dbData);
-        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-        //var stringifyString = JSON.stringify(dbData);
-        res.write(dbData);
-        process.stdout.write('\nhttp response data is: \n' + dbData);
-        res.end();
-      });
+      process.stdout.write('\nreq.url prefix is: ' + urlPrefix + ', table is: ' + dbTables[table] + ', date is: ' + date + ' and column is ' + column);
 
-    }else if(date == 'null' && column == 'null'){
+      if (urlPrefix == "/api/" && date != 'null' && column == 'null') {
 
-      process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
-      await getDataFrom(table).then((dbData)=>{
-        //process.stdout.write('\ndbData is: ' + dbData);
-        res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-        //var stringifyString = JSON.stringify(dbData);
-        res.write(dbData);
-        process.stdout.write('\nhttp response data is: \n' + dbData);
-        res.end();
-      });
+        process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
+        await getDataFrom(table, date).then((dbData)=>{
+          //process.stdout.write('\ndbData is: ' + dbData);
+          res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+          var stringifyString = JSON.stringify(dbData);
+          res.write(stringifyString);
+          process.stdout.write('\nhttp response data is: \n' + dbData);
+          res.end();
+        });
 
-    }else{
-      var mimeType = path.extname(req.url);
+      }else if(urlPrefix == "/api/" && date == 'null' && column != 'null'){
+        process.stdout.write('\napi address for getMinMaxDatePickerDates() is: ' + req.url);
+        await getMinMaxDatePickerDates(table, column).then((dbData)=>{
+          //process.stdout.write('\ndbData is: ' + dbData);
+          res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+          var stringifyString = JSON.stringify(dbData);
+          res.write(stringifyString);
+          process.stdout.write('\nhttp response data is: \n' + dbData);
+          res.end();
+        });
 
-      if (req.url === '/') {
-        mimeType = '/';
-      }
-      process.stdout.write('\nreq.url - mimeType is: ' + req.url + ' - ' + mimeType);
+      }else if(urlPrefix == "/api/" && date == 'all' && column != 'null'){
 
-      switch (mimeType) {
-        case '/':
-          //return the dashboard page
-          process.stdout.write('Fetching index.html');
+        process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
+        await getDataFrom(table, date, column).then((dbData)=>{
+          //process.stdout.write('\ndbData is: ' + dbData);
+          res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+          //var stringifyString = JSON.stringify(dbData);
+          res.write(dbData);
+          process.stdout.write('\nhttp response data is: \n' + dbData);
+          res.end();
+        });
 
-          fs.readFile(dashboardPageAddress, function(err,data){
+      }else if(date == 'null' && column == 'null'){
+
+        process.stdout.write('\napi address for getDataFrom() is: ' + req.url);
+        await getDataFrom(table).then((dbData)=>{
+          //process.stdout.write('\ndbData is: ' + dbData);
+          res.writeHead(200, {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+          //var stringifyString = JSON.stringify(dbData);
+          res.write(dbData);
+          process.stdout.write('\nhttp response data is: \n' + dbData);
+          res.end();
+        });
+
+      }else{
+        var mimeType = path.extname(req.url);
+
+        if (req.url === '/') {
+          mimeType = '/';
+        }
+        process.stdout.write('\nreq.url - mimeType is: ' + req.url + ' - ' + mimeType);
+
+        switch (mimeType) {
+          case '/':
+            //return the dashboard page
             process.stdout.write('Fetching index.html');
 
-            if (!err) {
-              res.writeHead(200, {'Content-Type': 'text/html'});
-              res.write(data, 'utf-8');
-              res.end();
-              process.stdout.write('index.html sent!');
-            }else{
-              process.stdout.write('\nError loading index.html: ' + err);
-            }
-          });
-        break;
+            fs.readFile(dashboardPageAddress, function(err,data){
+              process.stdout.write('Fetching index.html');
 
-        case '.js':
-          fs.readFile(distDir + req.url, function(err,data){
-
-            if (!err) {
-              res.writeHead(200, {'Content-Type': 'text/javascript'});
-              res.write(data, 'utf-8');
-              res.end();
-            }else{
-              process.stdout.write('\nError loading .js: ' + err);
-            }
-          });
-        
-        break;
-
-        case '.css':
-          fs.readFile(distDir + req.url, function(err,data){
-
-            if (!err) {
-              res.writeHead(200, {'Content-Type': 'text/css'});
-              res.write(data, 'utf-8');
-              res.end();
-            }else{
-              process.stdout.write('\nError loading .css: ' + err);
-            }
-          });
-        break;
-
-        case '.png':
-          fs.readFile(distDir + req.url, function(err,data){
-
-            if (!err) {
-              res.writeHead(200, {'Content-Type': 'image/png'});
-              res.write(data);
-              res.end();
-            }else{
-              process.stdout.write('\nError loading .png: ' + err);
-            }
-          });
-        break;
-      
-        case '.ico':
-          fs.readFile(distDir + req.url, function(err,data){
-
-            if (!err) {
-              res.writeHead(200, {'Content-Type': 'image/x-icon'});
-              res.write(data);
-              res.end();
-            }else{
-              process.stdout.write('\nError loading .ico: ' + err);
-            }
-          });
-        break;
-
-        case '.jpg':
-          fs.readFile(distDir + req.url, function(err,data){
-
-            if (!err) {
-              res.writeHead(200, {'Content-Type': 'image/jpeg'});
-              res.write(data);
-              res.end();
-            }else{
-              process.stdout.write('\nError loading .jpg: ' + err);
-            }
-          });
-        break;
-
-
-        default:
-          process.stdout.write('Received an unrecognised request URL in http.createServer(): ' + req.url + 'END OF URL');
+              if (!err) {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                res.write(data, 'utf-8');
+                res.end();
+                process.stdout.write('index.html sent!');
+              }else{
+                process.stdout.write('\nError loading index.html: ' + err);
+              }
+            });
           break;
-      }
 
+          case '.js':
+            fs.readFile(distDir + req.url, function(err,data){
+
+              if (!err) {
+                res.writeHead(200, {'Content-Type': 'text/javascript'});
+                res.write(data, 'utf-8');
+                res.end();
+              }else{
+                process.stdout.write('\nError loading .js: ' + err);
+              }
+            });
+          
+          break;
+
+          case '.css':
+            fs.readFile(distDir + req.url, function(err,data){
+
+              if (!err) {
+                res.writeHead(200, {'Content-Type': 'text/css'});
+                res.write(data, 'utf-8');
+                res.end();
+              }else{
+                process.stdout.write('\nError loading .css: ' + err);
+              }
+            });
+          break;
+
+          case '.png':
+            fs.readFile(distDir + req.url, function(err,data){
+
+              if (!err) {
+                res.writeHead(200, {'Content-Type': 'image/png'});
+                res.write(data);
+                res.end();
+              }else{
+                process.stdout.write('\nError loading .png: ' + err);
+              }
+            });
+          break;
+        
+          case '.ico':
+            fs.readFile(distDir + req.url, function(err,data){
+
+              if (!err) {
+                res.writeHead(200, {'Content-Type': 'image/x-icon'});
+                res.write(data);
+                res.end();
+              }else{
+                process.stdout.write('\nError loading .ico: ' + err);
+              }
+            });
+          break;
+
+          case '.jpg':
+            fs.readFile(distDir + req.url, function(err,data){
+
+              if (!err) {
+                res.writeHead(200, {'Content-Type': 'image/jpeg'});
+                res.write(data);
+                res.end();
+              }else{
+                process.stdout.write('\nError loading .jpg: ' + err);
+              }
+            });
+          break;
+
+
+          default:
+            process.stdout.write('Received an unrecognised request URL in http.createServer(): ' + req.url + 'END OF URL');
+            break;
+        }
+
+      }      
     }
 
-  }).listen(webServerPort);
+    process.stdout.write(`\nServer listening on port: ${webServerPort}`);
+  }).listen(webServerPort, webServerHostname);
 
 
+}
+
+function checkUserLogin(table, username, password){
+
+  return new Promise((resolve, reject) => {
+
+    var queryString = `SELECT password FROM ${table} WHERE username = '${username}'`;
+
+    dbConnectionPool.getConnection((err, poolConnection) => {
+      if (err) {
+        process.stdout.write('\nError getting pool connection: ' + err);
+      }else{
+        process.stdout.write('\nDatabase Connection from Pool established!');
+
+        poolConnection.query(
+          queryString,
+          function (error, results, fields) {
+            process.stdout.write('\nIn checkUserLogin(), Query sent to database: ' + queryString);
+            //process.stdout.write('\nResult of Query: ' + JSON.stringify(results));      
+          try {  
+            if (error) throw error;    
+          } catch (error) {
+            process.stdout.write('\nError thrown when trying to connect to db in poolConnection.query(): ' + error);
+            process.stdout.write('\nQuery string was: ' + queryString);
+
+          }
+          //var prefix = prefixes[table];
+          result = JSON.stringify(results);
+
+          process.stdout.write(`\nPretty print of results:\n`);
+          process.stdout.write(JSON.stringify(results,null,4));
+
+          finalResult = /*prefix +*/ result;
+
+          process.stdout.write(`\nResult of Database Query is: ${results.length} entries`);
+
+          if (results[0]['password'] == password) {
+            finalResult = 'true';
+          } else {
+            finalResult = 'false';
+          }
+          resolve(finalResult);
+
+        });
+        dbConnectionPool.releaseConnection(poolConnection);
+      }
+    })
+  });
 }
 
 function getDataFrom(table, date='null', column='null') {  

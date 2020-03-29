@@ -1,0 +1,18 @@
+$jumboTronBackground: rgba(#0275d8, 0.3);
+$jumboTronBg2: rgba(#77d42a, 0.5);
+
+
+
+.jumbotron{
+    margin: auto;
+    width: 350px;
+    height: 400px;
+    //background-image: url('../../assets/Images/bgTitleBar1.jpg');
+    //background-repeat: none;
+    //background-size: cover;
+    background-color: $jumboTronBg2;
+}
+
+.jumbotron > h2{
+    text-align: center;
+}
