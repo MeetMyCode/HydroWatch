@@ -4,7 +4,7 @@ import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import { Observable, of, from, observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 //import { getHostNameToUse, getLocalNetworkIpToUse, getPiIpToUse, getPortToUse, getWebSocketPortToUse } from './models/networkSettings';
-var netSettings = require('./models/networkSettings.js');
+var netSettings = require('../models/networkSettings.js');
 
 @Injectable({
   providedIn: 'root'

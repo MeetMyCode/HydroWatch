@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
-import { /*AlertService,*/ AuthenticationService } from '../authentication.service';
+import { /*AlertService,*/ AuthenticationService } from '../services/authentication.service';
 
 
 @Component({
@@ -70,6 +70,7 @@ export class LoginComponent implements OnInit {
                     this.loginForm.reset();
                     this.loading = false;
                     this.submitted = false;
+                    $('#username').focus();
                     //this.router.navigate([this.returnUrl]);
                 }
                 

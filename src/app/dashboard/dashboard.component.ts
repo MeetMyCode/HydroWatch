@@ -1,9 +1,9 @@
 import { Component, OnInit, AfterContentInit, AfterContentChecked } from '@angular/core';
-import { WebSocketService } from '../web-socket.service';
-import { DatabaseControllerService } from '../database-controller.service';
+import { WebSocketService } from '../services/web-socket.service';
+import { DatabaseControllerService } from '../services/database-controller.service';
 import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 import { faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
-import { GetDatePickerService } from '../get-chart-date-service.service';
+import { GetDatePickerService } from '../services/get-chart-date-service.service';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router, ActivatedRoute } from '@angular/router';
 

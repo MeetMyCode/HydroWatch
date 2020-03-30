@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnChanges, AfterContentInit } from '@angular/core';
 import { NgbDatepicker, NgbInputDatepicker, NgbDateStruct, NgbDateParserFormatter, NgbDate } from '@ng-bootstrap/ng-bootstrap';
-import { GetDatePickerService } from '../get-chart-date-service.service'
-import { DatabaseControllerService } from "../database-controller.service";
+import { GetDatePickerService } from '../services/get-chart-date-service.service'
+import { DatabaseControllerService } from "../services/database-controller.service";
 import { from, Subject } from "rxjs";
 import { ParsedEvent } from '@angular/compiler';
 

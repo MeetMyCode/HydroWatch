@@ -22,6 +22,11 @@ const dbColumnsInUse = {"t":"temperature", "p":"ph", "e":"ec", "o":"orp"};
 const prefixes = {0:"tt",1:"ph",2:"ec",3:"or",};
 const Readline = SerialPort.parsers.Readline;
 
+const sslCertAndKey = {
+  cert: fs.readFileSync('../ssl/server.crt'),
+  key: fs.readFileSync('../ssl/server.key'),
+};
+
 //Stores the interval value in seconds for the timer used to inform the user 
 //when the next reading will take place.
 var timerInterval; 
@@ -50,10 +55,7 @@ var port = new SerialPort('/dev/tty.usbmodem14201', {
 });
 
 function createWebSocket(){
-  const server = https.createServer({
-    cert: fs.readFileSync('../../../ssl/server.crt'),
-    key: fs.readFileSync('../../../ssl/server.key'),
-  });
+  const server = https.createServer(sslCertAndKey);
   
   const wss = new MyWebSocket.Server({ server });
   
@@ -88,12 +90,7 @@ function createWebSocket(){
 
 function createServer(){
 
-  var options = {
-    cert: fs.readFileSync('../../../ssl/server.crt'),
-    key: fs.readFileSync('../../../ssl/server.key')
-  }
-
-  https.createServer(options, async function (req, res) {
+  https.createServer(sslCertAndKey, async function (req, res) {
     process.stdout.write(`\nreq.url is: ${req.url}`);
     var loginUrl = '/login';
 
