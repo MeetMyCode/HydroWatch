@@ -3,17 +3,19 @@ import { WebSocketService } from './web-socket.service';
 import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import { Observable, of, from, observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+//import { getHostNameToUse, getLocalNetworkIpToUse, getPiIpToUse, getPortToUse, getWebSocketPortToUse } from './models/networkSettings';
+var netSettings = require('./models/networkSettings.js');
 
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseControllerService {
 
-	publicIp = '213.31.118.1';
-	localhost = 'localhost';
+	//publicIp = '213.31.118.1';
+	//localhost = 'localhost';
 
 	//private queryResult :string;
-	private httpsBaseAddress = `https://${this.publicIp}:443`;
+	private httpsBaseAddress = `https://${netSettings.getHostNameToUse()}:${netSettings.getPortToUse()}`;
 
   	constructor(private myWebSocket: WebSocketService, private https: HttpClient) { }  
   

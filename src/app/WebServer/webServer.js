@@ -1,3 +1,5 @@
+const netSettings = require('../models/networkSettings.js');
+
 /*#region CONSTANTS/PROPERTIES/VARIABLES ETC*/
 const SerialPort = require('serialport')
 const mysql = require('mysql');
@@ -5,11 +7,11 @@ const MyWebSocket = require('ws');
 const https = require('https');
 const path = require('path');
 const fs = require('fs');
-const webServerPort = 8080;
-const sslPort = 443;
-const webSocketPort = 12345;
+//const webServerPort = 8080;
+//const sslPort = 443;
+//const webSocketPort = 12345;
 //const webServerHostname = '192.168.1.66';
-const webServerHostname = 'localhost';
+//const webServerHostname = 'localhost';
 const dashboardPageAddress = '../index.html';
 const distDir = '../assets/Images';
 
@@ -55,7 +57,7 @@ function createWebSocket(){
   
   const wss = new MyWebSocket.Server({ server });
   
-  server.listen(webSocketPort,webServerHostname);
+  server.listen(netSettings.getWebSocketPortToUse,netSettings.getHostNameToUse);
 
   //WEB SOCKET EVENT LISTENER
   wss.on('connection', function connection(serverSocket) {
@@ -282,8 +284,8 @@ function createServer(){
       }      
     }
 
-    process.stdout.write(`\nServer listening on port: ${webServerPort}`);
-  }).listen(webServerPort, webServerHostname);
+    process.stdout.write(`\nServer listening on port: ${netSettings.getPortToUse}`);
+  }).listen(netSettings.getPortToUse(), netSettings.getHostNameToUse());
 
 
 }
