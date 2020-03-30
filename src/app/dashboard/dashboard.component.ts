@@ -5,7 +5,7 @@ import { Gauge } from 'node_modules/gaugeJS/dist/gauge.js';
 import { faSearchPlus, faSearchMinus } from '@fortawesome/free-solid-svg-icons';
 import { GetDatePickerService } from '../get-chart-date-service.service';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
-
+import { Router, ActivatedRoute } from '@angular/router';
 
 var Chart = require('chart.js');
 
@@ -233,9 +233,17 @@ export class DashboardComponent implements OnInit {
 	constructor(
 		private myWebSocketService: WebSocketService, 
 		private databaseService: DatabaseControllerService,
-		private datePickerService: GetDatePickerService) {	}
+		private datePickerService: GetDatePickerService,
+		private router: Router) {	}
 
 	ngOnInit(){
+
+		var isLoggedIn = sessionStorage.getItem('isLoggedIn');
+		console.log(`isLoggedIn is: ${isLoggedIn}`);
+		if (isLoggedIn == 'false' || isLoggedIn == '' || isLoggedIn == null) {
+			this.router.navigate(['']);
+		}
+
 		//Request the timer interval value (in seconds).
 		this.myWebSocketService.getSocket().next('timerInterval');
 

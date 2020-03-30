@@ -31,10 +31,11 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-      this.loginForm = this.formBuilder.group({
-          username: ['', Validators.required],
-          password: ['', Validators.required]
-      });
+
+    this.loginForm = this.formBuilder.group({
+        username: ['', Validators.required],
+        password: ['', Validators.required]
+    });
 
       // get return url from route parameters or default to '/'
       //this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
@@ -60,6 +61,7 @@ export class LoginComponent implements OnInit {
               isUserValid => {
                 console.log(`isUserValid is: ${JSON.stringify(isUserValid)}`);
                 if (isUserValid == 'true') {
+                    sessionStorage.setItem('isLoggedIn', 'true');
                     console.log('User is valid!');
                     //Navigate to Dashboard Component
                     this.router.navigateByUrl('/dashboard');
