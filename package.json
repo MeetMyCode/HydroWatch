@@ -35,13 +35,13 @@
     "rxjs": "~6.5.4",
     "serialport": "^8.0.7",
     "tslib": "^1.10.0",
-    "webpack": "^4.41.6",
+    "webpack": "^5.75.0",
     "webpack-dev-server": "^3.10.1",
     "ws": "^7.2.1",
     "zone.js": "~0.10.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^0.901.0",
+    "@angular-devkit/build-angular": "^15.0.4",
     "@angular/cli": "^9.1.0",
     "@angular/compiler-cli": "~9.0.1",
     "@angular/language-service": "~9.0.1",
