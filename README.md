@@ -6,13 +6,15 @@ A web-based dashboard for displaying hydroponic parameters in real time, via ard
 
 ## Is it fully working yet?
 
-No.
+Almost there....
 
 ## What technologies have been used?
 
-HTML, CSS3/SCSS, Angular 8, Bootstrap 4. Node.js is intended to be used for the web server.
+HTML, CSS3, Javascript, JQuery, Bootstrap 4. Node.js for the web server.
 
 ## ScreenShots
+
+Image to be updated - below is an older version.
 
 ![alt text](https://github.com/MeetMyCode/HydroWatch/blob/master/src/assets/Images/HydroWatchCoverImage.png "HydroWatch")
 
